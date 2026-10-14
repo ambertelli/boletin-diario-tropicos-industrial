@@ -14,7 +14,105 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      boletins: {
+        Row: {
+          acidente: Json
+          created_at: string
+          created_by: string | null
+          data: string
+          horario: string
+          id: string
+          lider: string
+          observacoes: string
+          ocorrencias: Json
+          paradas: Json
+          producao: Json
+          turma: string
+          updated_at: string
+        }
+        Insert: {
+          acidente?: Json
+          created_at?: string
+          created_by?: string | null
+          data: string
+          horario: string
+          id?: string
+          lider?: string
+          observacoes?: string
+          ocorrencias?: Json
+          paradas?: Json
+          producao?: Json
+          turma: string
+          updated_at?: string
+        }
+        Update: {
+          acidente?: Json
+          created_at?: string
+          created_by?: string | null
+          data?: string
+          horario?: string
+          id?: string
+          lider?: string
+          observacoes?: string
+          ocorrencias?: Json
+          paradas?: Json
+          producao?: Json
+          turma?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      cadastros: {
+        Row: {
+          id: string
+          nome: string
+          tipo: string
+        }
+        Insert: {
+          id?: string
+          nome: string
+          tipo: string
+        }
+        Update: {
+          id?: string
+          nome?: string
+          tipo?: string
+        }
+        Relationships: []
+      }
+      programacao_itens: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          data: string
+          formato: string
+          id: string
+          marca: string
+          metros: string
+          quantidade: number
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          data: string
+          formato?: string
+          id?: string
+          marca: string
+          metros?: string
+          quantidade?: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          data?: string
+          formato?: string
+          id?: string
+          marca?: string
+          metros?: string
+          quantidade?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
