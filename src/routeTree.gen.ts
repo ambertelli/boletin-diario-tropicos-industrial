@@ -12,8 +12,12 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuthenticatedCadastrosRouteImport } from './routes/_authenticated/cadastros'
+import { Route as AuthenticatedHistoricoRouteImport } from './routes/_authenticated/historico'
 import { Route as AuthenticatedPainelRouteImport } from './routes/_authenticated/painel'
 import { Route as AuthenticatedProgramacaoRouteImport } from './routes/_authenticated/programacao'
+import { Route as AuthenticatedBoletimIdRouteImport } from './routes/_authenticated/boletim.$id'
+import { Route as AuthenticatedBoletimNovoRouteImport } from './routes/_authenticated/boletim.novo'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -29,6 +33,16 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedCadastrosRoute = AuthenticatedCadastrosRouteImport.update({
+  id: '/cadastros',
+  path: '/cadastros',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedHistoricoRoute = AuthenticatedHistoricoRouteImport.update({
+  id: '/historico',
+  path: '/historico',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedPainelRoute = AuthenticatedPainelRouteImport.update({
   id: '/painel',
   path: '/painel',
@@ -40,39 +54,82 @@ const AuthenticatedProgramacaoRoute =
     path: '/programacao',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedBoletimIdRoute = AuthenticatedBoletimIdRouteImport.update({
+  id: '/boletim/$id',
+  path: '/boletim/$id',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedBoletimNovoRoute =
+  AuthenticatedBoletimNovoRouteImport.update({
+    id: '/boletim/novo',
+    path: '/boletim/novo',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/cadastros': typeof AuthenticatedCadastrosRoute
+  '/historico': typeof AuthenticatedHistoricoRoute
   '/painel': typeof AuthenticatedPainelRoute
   '/programacao': typeof AuthenticatedProgramacaoRoute
+  '/boletim/$id': typeof AuthenticatedBoletimIdRoute
+  '/boletim/novo': typeof AuthenticatedBoletimNovoRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/cadastros': typeof AuthenticatedCadastrosRoute
+  '/historico': typeof AuthenticatedHistoricoRoute
   '/painel': typeof AuthenticatedPainelRoute
   '/programacao': typeof AuthenticatedProgramacaoRoute
+  '/boletim/$id': typeof AuthenticatedBoletimIdRoute
+  '/boletim/novo': typeof AuthenticatedBoletimNovoRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/_authenticated/cadastros': typeof AuthenticatedCadastrosRoute
+  '/_authenticated/historico': typeof AuthenticatedHistoricoRoute
   '/_authenticated/painel': typeof AuthenticatedPainelRoute
   '/_authenticated/programacao': typeof AuthenticatedProgramacaoRoute
+  '/_authenticated/boletim/$id': typeof AuthenticatedBoletimIdRoute
+  '/_authenticated/boletim/novo': typeof AuthenticatedBoletimNovoRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/painel' | '/programacao'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/cadastros'
+    | '/historico'
+    | '/painel'
+    | '/programacao'
+    | '/boletim/$id'
+    | '/boletim/novo'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/painel' | '/programacao'
+  to:
+    | '/'
+    | '/auth'
+    | '/cadastros'
+    | '/historico'
+    | '/painel'
+    | '/programacao'
+    | '/boletim/$id'
+    | '/boletim/novo'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/_authenticated/cadastros'
+    | '/_authenticated/historico'
     | '/_authenticated/painel'
     | '/_authenticated/programacao'
+    | '/_authenticated/boletim/$id'
+    | '/_authenticated/boletim/novo'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -104,6 +161,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/cadastros': {
+      id: '/_authenticated/cadastros'
+      path: '/cadastros'
+      fullPath: '/cadastros'
+      preLoaderRoute: typeof AuthenticatedCadastrosRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/historico': {
+      id: '/_authenticated/historico'
+      path: '/historico'
+      fullPath: '/historico'
+      preLoaderRoute: typeof AuthenticatedHistoricoRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/painel': {
       id: '/_authenticated/painel'
       path: '/painel'
@@ -118,17 +189,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProgramacaoRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/boletim/$id': {
+      id: '/_authenticated/boletim/$id'
+      path: '/boletim/$id'
+      fullPath: '/boletim/$id'
+      preLoaderRoute: typeof AuthenticatedBoletimIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/boletim/novo': {
+      id: '/_authenticated/boletim/novo'
+      path: '/boletim/novo'
+      fullPath: '/boletim/novo'
+      preLoaderRoute: typeof AuthenticatedBoletimNovoRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedCadastrosRoute: typeof AuthenticatedCadastrosRoute
+  AuthenticatedHistoricoRoute: typeof AuthenticatedHistoricoRoute
   AuthenticatedPainelRoute: typeof AuthenticatedPainelRoute
   AuthenticatedProgramacaoRoute: typeof AuthenticatedProgramacaoRoute
+  AuthenticatedBoletimIdRoute: typeof AuthenticatedBoletimIdRoute
+  AuthenticatedBoletimNovoRoute: typeof AuthenticatedBoletimNovoRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedCadastrosRoute: AuthenticatedCadastrosRoute,
+  AuthenticatedHistoricoRoute: AuthenticatedHistoricoRoute,
   AuthenticatedPainelRoute: AuthenticatedPainelRoute,
   AuthenticatedProgramacaoRoute: AuthenticatedProgramacaoRoute,
+  AuthenticatedBoletimIdRoute: AuthenticatedBoletimIdRoute,
+  AuthenticatedBoletimNovoRoute: AuthenticatedBoletimNovoRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =

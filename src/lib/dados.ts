@@ -41,7 +41,7 @@ export const boletinsMesQuery = (data: string) =>
     queryFn: async () => {
       const ini = data.slice(0, 7) + "-01";
       const [y, m] = data.split("-").map(Number);
-      const fim = new Date(y, m, 0).getDate();
+      const fim = new Date(y!, m!, 0).getDate();
       const { data: rows, error } = await supabase
         .from("boletins").select("id,data,turma,horario,lider,producao")
         .gte("data", ini).lte("data", `${data.slice(0, 7)}-${String(fim).padStart(2, "0")}`)

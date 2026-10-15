@@ -31,9 +31,9 @@ function Programacao() {
   async function adicionar(e: React.FormEvent) {
     e.preventDefault();
     const q = parseInt(novo.quantidade, 10);
-    if (!novo.marca || !q) return toast.error("Informe marca e quantidade");
+    if (!novo.marca || !q) { toast.error("Informe marca e quantidade"); return; }
     const { error } = await supabase.from("programacao_itens").insert({ data, marca: novo.marca, formato: novo.formato, metros: novo.metros, quantidade: q });
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     setNovo({ marca: "", formato: "", metros: "", quantidade: "" });
     refresh();
   }
