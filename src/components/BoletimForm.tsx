@@ -75,7 +75,8 @@ export function BoletimForm({ inicial, id }: { inicial: Form; id?: string }) {
       : await supabase.from("boletins").insert(payload as never).select("id").single();
     setBusy(false);
     if (r.error) {
-      return toast.error(r.error.code === "23505" ? "Já existe boletim para este dia e horário" : r.error.message);
+      toast.error(r.error.code === "23505" ? "Já existe boletim para este dia e horário" : r.error.message);
+      return;
     }
     toast.success("Boletim salvo — programação atualizada");
     qc.invalidateQueries({ queryKey: ["boletins"] });
@@ -245,7 +246,7 @@ function SecaoTabela({ s, linhas, setLinha, addLinha, saldoDe, semTitulo }: {
         </tr></thead>
         <tbody>
           {idxs.map((i) => {
-            const l = linhas[i];
+            const l = linhas[i]!;
             const sd = l.marca ? saldoDe(l) : undefined;
             return (
               <tr key={i} className="border-t">

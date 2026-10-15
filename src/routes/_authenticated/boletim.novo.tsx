@@ -11,7 +11,7 @@ export const Route = createFileRoute("/_authenticated/boletim/novo")({
 
 function horarioAtual() {
   const h = new Date().getHours();
-  return HORARIOS[Math.floor(h / 6)];
+  return HORARIOS[Math.floor(h / 6)] ?? HORARIOS[0];
 }
 
 function Novo() {

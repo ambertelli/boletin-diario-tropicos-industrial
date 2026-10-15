@@ -34,7 +34,7 @@ function Lista({ tipo, titulo, itens }: { tipo: string; titulo: string; itens: {
     e.preventDefault();
     if (!nome.trim()) return;
     const { error } = await supabase.from("cadastros").insert({ tipo, nome: nome.trim() });
-    if (error) return toast.error(error.code === "23505" ? "Já cadastrado" : error.message);
+    if (error) { toast.error(error.code === "23505" ? "Já cadastrado" : error.message); return; }
     setNome(""); refresh();
   }
   return (

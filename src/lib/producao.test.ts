@@ -9,18 +9,18 @@ describe("débito da programação", () => {
       [{ id: "1", marca: "Fofopel", formato: "16/4", metros: "30m", quantidade: 2000 }],
       [l("emb1", "Fofopel", "16/4", "30m", 432)],
     );
-    expect(itens[0].saldo).toBe(1568);
+    expect(itens[0]!.saldo).toBe(1568);
   });
   it("soma lançamentos de turmas diferentes no mesmo dia", () => {
     const { itens } = calcularSaldos(
       [{ id: "1", marca: "Fofopel", formato: "16/4", metros: "30m", quantidade: 2000 }],
       [l("emb1", "Fofopel", "16/4", "30m", 432), l("emb1", " fofopel ", "16/4", "30M", 500)],
     );
-    expect(itens[0].produzido).toBe(932);
+    expect(itens[0]!.produzido).toBe(932);
   });
   it("produção sem programação fica fora", () => {
     const { fora } = calcularSaldos([], [l("emb4", "Trópico's", "4/16", "30m", 672)]);
-    expect(fora[0].quantidade).toBe(672);
+    expect(fora[0]!.quantidade).toBe(672);
   });
 });
 
