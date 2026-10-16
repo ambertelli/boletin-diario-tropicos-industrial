@@ -1,4 +1,10 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient } from "@tanstack/react-query";
+import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
+import { createAsyncStoragePersister } from "@tanstack/query-async-storage-persister";
+import { get, set, del } from "idb-keyval";
+import { registrarPWA } from "@/lib/pwa";
+import { lerFila } from "@/lib/fila";
+import { sincronizarAgora } from "@/lib/sync";
 import {
   Outlet,
   Link,
@@ -80,6 +86,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
+      { name: "theme-color", content: "#0f1f45" },
       { title: "Diário de Produção – Trópico's" },
       { name: "description", content: "Boletim de conversão por turno integrado à programação diária." },
       { property: "og:type", content: "website" },
@@ -92,7 +99,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&display=swap" },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+      { rel: "icon", href: "/favicon.png", type: "image/png" },
+      { rel: "manifest", href: "/manifest.webmanifest" },
+      { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
     ],
   }),
   shellComponent: RootShell,
@@ -115,6 +124,11 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
+const persister = createAsyncStoragePersister({
+  storage: typeof window === "undefined" ? undefined : { getItem: (k) => get(k), setItem: (k, v) => set(k, v), removeItem: (k) => del(k) },
+  key: "cache-diario",
+});
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const router = useRouter();
@@ -127,11 +141,20 @@ function RootComponent() {
     return () => data.subscription.unsubscribe();
   }, [router, queryClient]);
 
+  useEffect(() => {
+    registrarPWA();
+    lerFila().then(() => sincronizarAgora(queryClient));
+    const on = () => sincronizarAgora(queryClient);
+    window.addEventListener("online", on);
+    const t = setInterval(on, 60_000);
+    return () => { window.removeEventListener("online", on); clearInterval(t); };
+  }, [queryClient]);
+
   return (
-    <QueryClientProvider client={queryClient}>
+    <PersistQueryClientProvider client={queryClient} persistOptions={{ persister, maxAge: 1000 * 60 * 60 * 24 * 7 }}>
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <Outlet />
       <Toaster richColors />
-    </QueryClientProvider>
+    </PersistQueryClientProvider>
   );
 }

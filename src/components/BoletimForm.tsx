@@ -4,6 +4,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { boletinsDiaQuery, boletinsMesQuery, cadastrosQuery, programacaoQuery, type Boletim } from "@/lib/dados";
+import { enfileirar, erroDeRede } from "@/lib/fila";
 import {
   HORARIOS, SECOES, TURMAS, calcularSaldos, chave, fmt, totalBoletim,
   type Acidente, type LinhaProducao, type Ocorrencia, type Parada, type Secao,
@@ -70,9 +71,27 @@ export function BoletimForm({ inicial, id }: { inicial: Form; id?: string }) {
       acidente: f.acidente,
       updated_at: new Date().toISOString(),
     };
-    const r = id
-      ? await supabase.from("boletins").update(payload as never).eq("id", id).select("id").single()
-      : await supabase.from("boletins").insert(payload as never).select("id").single();
+    const bid = id ?? crypto.randomUUID();
+    const salvarOffline = async () => {
+      await enfileirar({ tipo: "salvar", id: bid, payload });
+      const local = { id: bid, ...payload } as unknown as Boletim;
+      qc.setQueryData<Boletim[]>(["boletins", "dia", f.data], (old) => [...(old ?? []).filter((b) => b.id !== bid), local]);
+      qc.setQueryData<Boletim[]>(["boletins", "mes", f.data.slice(0, 7)], (old) => [...(old ?? []).filter((b) => b.id !== bid), local]);
+      qc.setQueryData(["boletim", bid], local);
+      setBusy(false);
+      toast.warning("Sem conexão — boletim guardado no aparelho e será enviado automaticamente");
+      navigate({ to: "/painel" });
+    };
+    if (typeof navigator !== "undefined" && !navigator.onLine) return salvarOffline();
+    let r;
+    try {
+      r = id
+        ? await supabase.from("boletins").update(payload as never).eq("id", id).select("id").single()
+        : await supabase.from("boletins").insert({ id: bid, ...payload } as never).select("id").single();
+    } catch {
+      return salvarOffline();
+    }
+    if (r.error && erroDeRede(r.error)) return salvarOffline();
     setBusy(false);
     if (r.error) {
       toast.error(r.error.code === "23505" ? "Já existe boletim para este dia e horário" : r.error.message);
@@ -86,8 +105,14 @@ export function BoletimForm({ inicial, id }: { inicial: Form; id?: string }) {
 
   async function excluir() {
     if (!id || !confirm("Excluir este boletim? A produção volta para o saldo da programação.")) return;
-    await supabase.from("boletins").delete().eq("id", id);
-    qc.invalidateQueries({ queryKey: ["boletins"] });
+    const r = navigator.onLine ? await supabase.from("boletins").delete().eq("id", id).then((x) => x, (e) => ({ error: e })) : { error: { message: "offline" } };
+    if (r.error && erroDeRede(r.error)) {
+      await enfileirar({ tipo: "excluir", id });
+      qc.setQueriesData<Boletim[]>({ queryKey: ["boletins"] }, (old) => old?.filter((b) => b.id !== id));
+      toast.warning("Sem conexão — exclusão será enviada automaticamente");
+    } else {
+      qc.invalidateQueries({ queryKey: ["boletins"] });
+    }
     navigate({ to: "/historico" });
   }
 

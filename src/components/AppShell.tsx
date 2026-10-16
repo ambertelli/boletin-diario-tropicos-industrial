@@ -3,6 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { StatusConexao } from "@/components/StatusConexao";
 
 const links = [
   { to: "/painel", label: "Painel do dia" },
@@ -43,6 +44,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <Button size="sm" variant="secondary" onClick={sair}>Sair</Button>
         </div>
       </header>
+      <StatusConexao />
       <main className="mx-auto max-w-6xl px-4 py-6">{children}</main>
     </div>
   );
