@@ -22,4 +22,21 @@ export async function registrarPWA() {
   }
   const { registerSW } = await import("virtual:pwa-register");
   registerSW({ immediate: true });
+  guardarTelas();
+}
+
+// Guarda as telas principais já no primeiro acesso, para abrirem sem internet.
+async function guardarTelas() {
+  if (!navigator.onLine || !("caches" in window)) return;
+  try {
+    const c = await caches.open("paginas");
+    await Promise.allSettled(
+      ["/painel", "/boletim/novo", "/programacao", "/historico", "/cadastros", "/auth"].map(async (p) => {
+        const r = await fetch(p, { credentials: "same-origin" });
+        if (r.ok) await c.put(p, r);
+      }),
+    );
+  } catch {
+    /* ignora */
+  }
 }
