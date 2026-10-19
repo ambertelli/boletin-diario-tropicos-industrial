@@ -31,7 +31,25 @@ export default defineConfig({
             {
               urlPattern: ({ request, url }) => request.mode === "navigate" && !url.pathname.startsWith("/~oauth"),
               handler: "NetworkFirst",
-              options: { cacheName: "paginas", networkTimeoutSeconds: 4, expiration: { maxEntries: 50 } },
+              options: {
+                cacheName: "paginas",
+                networkTimeoutSeconds: 4,
+                expiration: { maxEntries: 50 },
+                plugins: [
+                  {
+                    // Sem internet e sem cópia desta tela: usa outra tela guardada (o app monta a tela certa no aparelho).
+                    handlerDidError: async () => {
+                      const c = await caches.open("paginas");
+                      for (const p of ["/painel", "/boletim/novo", "/programacao", "/historico", "/auth"]) {
+                        const r = await c.match(p, { ignoreSearch: true });
+                        if (r) return r;
+                      }
+                      const ks = await c.keys();
+                      return ks.length ? (await c.match(ks[0])) ?? undefined : undefined;
+                    },
+                  },
+                ],
+              },
             },
             {
               urlPattern: ({ url }) => url.origin === "https://fonts.googleapis.com" || url.origin === "https://fonts.gstatic.com",
