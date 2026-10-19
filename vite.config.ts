@@ -45,7 +45,7 @@ export default defineConfig({
                         if (r) return r;
                       }
                       const ks = await c.keys();
-                      return ks.length ? (await c.match(ks[0])) ?? undefined : undefined;
+                      return ks.length ? (await c.match(ks[0]!)) ?? undefined : undefined;
                     },
                   },
                 ],
