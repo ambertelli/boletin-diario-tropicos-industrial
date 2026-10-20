@@ -6,6 +6,7 @@ import { lovable } from "@/integrations/lovable/index";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { erroDeRedeAuth, sessaoGuardada } from "@/lib/sessao";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -25,6 +26,19 @@ function AuthPage() {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [busy, setBusy] = useState(false);
+  const [online, setOnline] = useState(true);
+
+  useEffect(() => {
+    const atualizar = () => {
+      setOnline(navigator.onLine);
+      // Sem internet, quem já entrou neste aparelho vai direto para o painel.
+      if (!navigator.onLine && sessaoGuardada()) navigate({ to: "/painel" });
+    };
+    atualizar();
+    window.addEventListener("online", atualizar);
+    window.addEventListener("offline", atualizar);
+    return () => { window.removeEventListener("online", atualizar); window.removeEventListener("offline", atualizar); };
+  }, [navigate]);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -38,15 +52,19 @@ function AuthPage() {
 
   async function enviar(e: React.FormEvent) {
     e.preventDefault();
+    if (!navigator.onLine) {
+      toast.error("Sem internet. O primeiro acesso neste aparelho precisa de conexão.");
+      return;
+    }
     setBusy(true);
     if (modo === "entrar") {
       const { error } = await supabase.auth.signInWithPassword({ email, password: senha });
-      if (error) toast.error("E-mail ou senha inválidos");
+      if (error) toast.error(erroDeRedeAuth(error) ? "Sem conexão com o servidor. Tente de novo quando a internet voltar." : "E-mail ou senha inválidos");
     } else {
       const { data, error } = await supabase.auth.signUp({
         email, password: senha, options: { emailRedirectTo: window.location.origin + "/painel" },
       });
-      if (error) toast.error(error.message);
+      if (error) toast.error(erroDeRedeAuth(error) ? "Sem conexão com o servidor. Tente de novo quando a internet voltar." : error.message);
       else if (!data.session) toast.success("Conta criada! Confirme pelo link enviado ao seu e-mail.");
     }
     setBusy(false);
@@ -62,12 +80,17 @@ function AuthPage() {
       <div className="w-full max-w-sm rounded-lg bg-card p-6 shadow-xl">
         <h1 className="font-display text-3xl font-bold text-primary">TRÓPICO'S</h1>
         <p className="mb-6 text-sm text-muted-foreground">Diário de Produção · Boletim Conversão</p>
+        {!online && (
+          <p className="mb-4 rounded bg-destructive px-3 py-2 text-sm font-medium text-destructive-foreground">
+            Sem internet. O primeiro acesso neste aparelho precisa de conexão.
+          </p>
+        )}
         <form onSubmit={enviar} className="space-y-3">
           <div><Label>E-mail</Label><Input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} /></div>
           <div><Label>Senha</Label><Input type="password" required minLength={6} value={senha} onChange={(e) => setSenha(e.target.value)} /></div>
-          <Button className="w-full" disabled={busy}>{modo === "entrar" ? "Entrar" : "Criar conta"}</Button>
+          <Button className="w-full" disabled={busy || !online}>{modo === "entrar" ? "Entrar" : "Criar conta"}</Button>
         </form>
-        <Button variant="outline" className="mt-3 w-full" onClick={google}>Continuar com Google</Button>
+        <Button variant="outline" className="mt-3 w-full" onClick={google} disabled={!online}>Continuar com Google</Button>
         <button className="mt-4 w-full text-sm text-muted-foreground underline" onClick={() => setModo(modo === "entrar" ? "criar" : "entrar")}>
           {modo === "entrar" ? "Primeiro acesso? Criar conta" : "Já tenho conta"}
         </button>
