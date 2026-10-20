@@ -2,7 +2,7 @@
 // Usada só sem internet: a senha não pode ser verificada, mas o líder já entrou antes neste aparelho.
 export type SessaoGuardada = { user: { id: string; email?: string }; expires_at?: number };
 
-export function chaveSessao(url = import.meta.env.VITE_SUPABASE_URL as string | undefined): string | null {
+export function chaveSessao(url = import.meta.env["VITE_SUPABASE_URL"] as string | undefined): string | null {
   if (!url) return null;
   try {
     return `sb-${new URL(url).hostname.split(".")[0]}-auth-token`;
@@ -38,7 +38,7 @@ export function semInternet(): boolean {
   return typeof navigator !== "undefined" && !navigator.onLine;
 }
 
-export function erroDeRedeAuth(e: { name?: string; status?: number; message?: string } | null | undefined): boolean {
+export function erroDeRedeAuth(e: { name?: string; status?: number | undefined; message?: string } | null | undefined): boolean {
   if (!e) return false;
   return e.name === "AuthRetryableFetchError" || e.status === 0 || /fetch|network/i.test(e.message ?? "");
 }
