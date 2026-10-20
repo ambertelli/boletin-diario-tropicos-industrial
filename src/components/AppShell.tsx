@@ -17,6 +17,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const qc = useQueryClient();
   const navigate = useNavigate();
   async function sair() {
+    if (!navigator.onLine && !window.confirm("Você está sem internet. Se sair agora, só poderá entrar de novo quando a conexão voltar. Sair mesmo assim?")) return;
     await qc.cancelQueries();
     qc.clear();
     await supabase.auth.signOut();
