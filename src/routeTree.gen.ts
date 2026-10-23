@@ -80,7 +80,6 @@ export interface FileRoutesByFullPath {
   '/painel': typeof AuthenticatedPainelRoute
   '/programacao': typeof AuthenticatedProgramacaoRoute
   '/programacao-producao': typeof AuthenticatedProgramacaoProducaoRoute
-  '/programacao-producao': typeof AuthenticatedProgramacaoProducaoRoute
   '/boletim/$id': typeof AuthenticatedBoletimIdRoute
   '/boletim/novo': typeof AuthenticatedBoletimNovoRoute
 }
@@ -91,6 +90,7 @@ export interface FileRoutesByTo {
   '/historico': typeof AuthenticatedHistoricoRoute
   '/painel': typeof AuthenticatedPainelRoute
   '/programacao': typeof AuthenticatedProgramacaoRoute
+  '/programacao-producao': typeof AuthenticatedProgramacaoProducaoRoute
   '/boletim/$id': typeof AuthenticatedBoletimIdRoute
   '/boletim/novo': typeof AuthenticatedBoletimNovoRoute
 }
