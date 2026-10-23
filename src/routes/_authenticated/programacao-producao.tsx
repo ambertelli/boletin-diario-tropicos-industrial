@@ -30,7 +30,7 @@ function ProgramacaoProducao() {
   const catalog = useQuery({
     queryKey: ["planner-products"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("planner_products").select("*").order("embaladeira").order("sort_order");
+      const { data, error } = await (supabase as any).from("planner_products").select("*").order("embaladeira").order("sort_order");
       if (error) throw error;
       return data as Product[];
     },
@@ -40,10 +40,10 @@ function ProgramacaoProducao() {
     queryFn: async () => {
       const { data: auth } = await supabase.auth.getUser();
       if (!auth.user) throw new Error("Sessão expirada. Entre novamente.");
-      const { data: s, error } = await supabase.from("planner_schedules").select("id").eq("user_id", auth.user.id).eq("schedule_date", date).maybeSingle();
+      const { data: s, error } = await (supabase as any).from("planner_schedules").select("id").eq("user_id", auth.user.id).eq("schedule_date", date).maybeSingle();
       if (error) throw error;
       if (!s) return { id: null as string | null, items: [] as Item[] };
-      const { data: items, error: itemError } = await supabase.from("planner_items").select("*, planner_products(*)").eq("schedule_id", s.id).order("embaladeira").order("prioridade");
+      const { data: items, error: itemError } = await (supabase as any).from("planner_items").select("*, planner_products(*)").eq("schedule_id", s.id).order("embaladeira").order("prioridade");
       if (itemError) throw itemError;
       return { id: s.id as string, items: (items ?? []).map((i: any) => ({ ...i, products: i.planner_products })) as Item[] };
     },
@@ -56,7 +56,7 @@ function ProgramacaoProducao() {
     e.preventDefault();
     if (!novo.name.trim() || !novo.formato.trim()) return toast.error("Informe nome e formato do produto.");
     setSaving(true);
-    const { error } = await supabase.from("planner_products").insert({
+    const { error } = await (supabase as any).from("planner_products").insert({
       embaladeira: Number(novo.embaladeira), name: novo.name.trim(), formato: novo.formato.trim(),
       metragem: Number(novo.metragem) || 0, rolos_por_pacote: Math.max(1, Number(novo.rolos) || 1),
       pacotes_por_fardo: Math.max(1, Number(novo.pacotes) || 1), sort_order: (catalog.data?.length ?? 0) + 1,
@@ -76,12 +76,12 @@ function ProgramacaoProducao() {
       if (!scheduleId) {
         const { data: auth } = await supabase.auth.getUser();
         if (!auth.user) throw new Error("Sessão expirada. Entre novamente.");
-        const { data: s, error } = await supabase.from("planner_schedules").insert({ user_id: auth.user.id, schedule_date: date }).select("id").single();
+        const { data: s, error } = await (supabase as any).from("planner_schedules").insert({ user_id: auth.user.id, schedule_date: date }).select("id").single();
         if (error) throw error;
         scheduleId = s.id;
       }
       const existing = schedule.data?.items.filter(i => i.embaladeira === Number(novoItem.embaladeira)) ?? [];
-      const { error } = await supabase.from("planner_items").insert({
+      const { error } = await (supabase as any).from("planner_items").insert({
         schedule_id: scheduleId, embaladeira: Number(novoItem.embaladeira),
         prioridade: existing.length + 1, product_id: novoItem.product_id, fardos: Math.max(0, Number(novoItem.fardos) || 0),
       });
@@ -92,11 +92,11 @@ function ProgramacaoProducao() {
     finally { setSaving(false); }
   }
   async function updateItem(id: string, field: string, value: number) {
-    const { error } = await supabase.from("planner_items").update({ [field]: Math.max(0, value) }).eq("id", id);
+    const { error } = await (supabase as any).from("planner_items").update({ [field]: Math.max(0, value) }).eq("id", id);
     if (error) toast.error(error.message); else qc.invalidateQueries({ queryKey: ["planner-schedule", date] });
   }
   async function removeItem(id: string) {
-    const { error } = await supabase.from("planner_items").delete().eq("id", id);
+    const { error } = await (supabase as any).from("planner_items").delete().eq("id", id);
     if (error) toast.error(error.message); else refresh();
   }
   const items = schedule.data?.items ?? [];
