@@ -77,7 +77,7 @@ ALTER TABLE public.planner_weights ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.planner_schedules ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.planner_items ENABLE ROW LEVEL SECURITY;
 
-GRANT SELECT ON public.planner_qualities, public.planner_reembalagens, public.planner_products, public.planner_weights TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.planner_qualities, public.planner_reembalagens, public.planner_products, public.planner_weights TO authenticated;
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.planner_schedules, public.planner_items TO authenticated;
 GRANT ALL ON public.planner_qualities, public.planner_reembalagens, public.planner_products, public.planner_weights, public.planner_schedules, public.planner_items TO service_role;
 
@@ -89,6 +89,14 @@ DROP POLICY IF EXISTS "planner authenticated read products" ON public.planner_pr
 CREATE POLICY "planner authenticated read products" ON public.planner_products FOR SELECT TO authenticated USING (true);
 DROP POLICY IF EXISTS "planner authenticated read weights" ON public.planner_weights;
 CREATE POLICY "planner authenticated read weights" ON public.planner_weights FOR SELECT TO authenticated USING (true);
+DROP POLICY IF EXISTS "planner authenticated manage products" ON public.planner_products;
+CREATE POLICY "planner authenticated manage products" ON public.planner_products FOR ALL TO authenticated USING (true) WITH CHECK (true);
+DROP POLICY IF EXISTS "planner authenticated manage qualities" ON public.planner_qualities;
+CREATE POLICY "planner authenticated manage qualities" ON public.planner_qualities FOR ALL TO authenticated USING (true) WITH CHECK (true);
+DROP POLICY IF EXISTS "planner authenticated manage reembalagens" ON public.planner_reembalagens;
+CREATE POLICY "planner authenticated manage reembalagens" ON public.planner_reembalagens FOR ALL TO authenticated USING (true) WITH CHECK (true);
+DROP POLICY IF EXISTS "planner authenticated manage weights" ON public.planner_weights;
+CREATE POLICY "planner authenticated manage weights" ON public.planner_weights FOR ALL TO authenticated USING (true) WITH CHECK (true);
 
 DROP POLICY IF EXISTS "planner own schedules" ON public.planner_schedules;
 CREATE POLICY "planner own schedules" ON public.planner_schedules FOR ALL TO authenticated
