@@ -13,7 +13,7 @@ type Item = { id: string; embaladeira: number; prioridade: number; product_id: s
 export const Route = createFileRoute("/_authenticated/programacao-producao")({
   validateSearch: (search: Record<string, unknown>): { data?: string } => {
     const d = search.data;
-    return typeof d === "string" && /^\\d{4}-\\d{2}-\\d{2}$/.test(d) ? { data: d } : {};
+    return typeof d === "string" && /^\d{4}-\d{2}-\d{2}$/.test(d) ? { data: d } : {};
   },
   head: () => ({ meta: [{ title: "Programação de produção – Diário de Produção" }] }),
   component: ProgramacaoProducao,
@@ -99,6 +99,22 @@ function ProgramacaoProducao() {
     const { error } = await (supabase as any).from("planner_items").delete().eq("id", id);
     if (error) toast.error(error.message); else refresh();
   }
+  async function publicarNoBoletim() {
+    if (!window.confirm("Publicar os fardos programados no saldo do Boletim Diário? Produtos com programação manual correspondente não serão sobrescritos; nesse caso a operação será cancelada.")) return;
+    setSaving(true);
+    try {
+      const { data, error } = await (supabase as any).rpc("sync_planner_to_programacao", { p_data: date });
+      if (error) throw error;
+      await qc.invalidateQueries({ queryKey: ["programacao", date] });
+      await qc.invalidateQueries({ queryKey: ["planner-schedule", date] });
+      toast.success(`Programação publicada no saldo do Boletim Diário. Linhas sincronizadas: ${Number(data) || 0}.`);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Não foi possível publicar. Confira se as migrações foram aplicadas.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
   const items = schedule.data?.items ?? [];
   const produtos = catalog.data ?? [];
   const productFor = (id: string | null) => produtos.find(p => p.id === id);
@@ -127,6 +143,11 @@ function ProgramacaoProducao() {
       </form>
     </section>
     <section className="overflow-hidden rounded-md border bg-card">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b px-3 py-2">
+        <div className="font-semibold">Publicar no Boletim Diário</div>
+        <Button variant="outline" disabled={saving || schedule.isLoading || !items.length} onClick={publicarNoBoletim}>Sincronizar com saldo do boletim</Button>
+      </div>
+      <p className="px-3 py-2 text-xs text-muted-foreground">Publica os fardos programados como quantidade-alvo do saldo diário. A produção real continua sendo lançada nos boletins. Para evitar duplicidade, a publicação é bloqueada se houver programação manual correspondente.</p>
       <div className="sheet-title">Adicionar item à programação</div>
       <form onSubmit={addItem} className="grid grid-cols-1 gap-2 p-3 sm:grid-cols-4">
         <select className="h-10 rounded-md border bg-background px-2" value={novoItem.embaladeira} onChange={e=>setNovoItem({...novoItem,embaladeira:e.target.value,product_id:""})}>{Array.from({length:8},(_,i)=><option key={i+1} value={i+1}>Linha {i+1}</option>)}</select>
