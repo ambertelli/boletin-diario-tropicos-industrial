@@ -9,6 +9,7 @@ const links = [
   { to: "/painel", label: "Painel do dia" },
   { to: "/boletim/novo", label: "Novo boletim" },
   { to: "/programacao", label: "Programação diária" },
+  { to: "/programacao-producao", label: "Programação de produção" },
   { to: "/historico", label: "Histórico" },
   { to: "/cadastros", label: "Cadastros" },
 ] as const;
