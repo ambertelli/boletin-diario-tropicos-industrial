@@ -16,6 +16,7 @@ import { Route as AuthenticatedCadastrosRouteImport } from './routes/_authentica
 import { Route as AuthenticatedHistoricoRouteImport } from './routes/_authenticated/historico'
 import { Route as AuthenticatedPainelRouteImport } from './routes/_authenticated/painel'
 import { Route as AuthenticatedProgramacaoRouteImport } from './routes/_authenticated/programacao'
+import { Route as AuthenticatedProgramacaoProducaoRouteImport } from './routes/_authenticated/programacao-producao'
 import { Route as AuthenticatedBoletimIdRouteImport } from './routes/_authenticated/boletim.$id'
 import { Route as AuthenticatedBoletimNovoRouteImport } from './routes/_authenticated/boletim.novo'
 
@@ -54,6 +55,11 @@ const AuthenticatedProgramacaoRoute =
     path: '/programacao',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedProgramacaoProducaoRoute = AuthenticatedProgramacaoProducaoRouteImport.update({
+  id: '/programacao-producao',
+  path: '/programacao-producao',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedBoletimIdRoute = AuthenticatedBoletimIdRouteImport.update({
   id: '/boletim/$id',
   path: '/boletim/$id',
@@ -73,6 +79,8 @@ export interface FileRoutesByFullPath {
   '/historico': typeof AuthenticatedHistoricoRoute
   '/painel': typeof AuthenticatedPainelRoute
   '/programacao': typeof AuthenticatedProgramacaoRoute
+  '/programacao-producao': typeof AuthenticatedProgramacaoProducaoRoute
+  '/programacao-producao': typeof AuthenticatedProgramacaoProducaoRoute
   '/boletim/$id': typeof AuthenticatedBoletimIdRoute
   '/boletim/novo': typeof AuthenticatedBoletimNovoRoute
 }
@@ -95,6 +103,7 @@ export interface FileRoutesById {
   '/_authenticated/historico': typeof AuthenticatedHistoricoRoute
   '/_authenticated/painel': typeof AuthenticatedPainelRoute
   '/_authenticated/programacao': typeof AuthenticatedProgramacaoRoute
+  '/_authenticated/programacao-producao': typeof AuthenticatedProgramacaoProducaoRoute
   '/_authenticated/boletim/$id': typeof AuthenticatedBoletimIdRoute
   '/_authenticated/boletim/novo': typeof AuthenticatedBoletimNovoRoute
 }
@@ -107,6 +116,7 @@ export interface FileRouteTypes {
     | '/historico'
     | '/painel'
     | '/programacao'
+    | '/programacao-producao'
     | '/boletim/$id'
     | '/boletim/novo'
   fileRoutesByTo: FileRoutesByTo
@@ -128,6 +138,7 @@ export interface FileRouteTypes {
     | '/_authenticated/historico'
     | '/_authenticated/painel'
     | '/_authenticated/programacao'
+    | '/_authenticated/programacao-producao'
     | '/_authenticated/boletim/$id'
     | '/_authenticated/boletim/novo'
   fileRoutesById: FileRoutesById
@@ -182,6 +193,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPainelRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/programacao-producao': {
+      id: '/_authenticated/programacao-producao'
+      path: '/programacao-producao'
+      fullPath: '/programacao-producao'
+      preLoaderRoute: typeof AuthenticatedProgramacaoProducaoRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/programacao': {
       id: '/_authenticated/programacao'
       path: '/programacao'
@@ -211,6 +229,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedHistoricoRoute: typeof AuthenticatedHistoricoRoute
   AuthenticatedPainelRoute: typeof AuthenticatedPainelRoute
   AuthenticatedProgramacaoRoute: typeof AuthenticatedProgramacaoRoute
+  AuthenticatedProgramacaoProducaoRoute: typeof AuthenticatedProgramacaoProducaoRoute
   AuthenticatedBoletimIdRoute: typeof AuthenticatedBoletimIdRoute
   AuthenticatedBoletimNovoRoute: typeof AuthenticatedBoletimNovoRoute
 }
@@ -220,6 +239,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedHistoricoRoute: AuthenticatedHistoricoRoute,
   AuthenticatedPainelRoute: AuthenticatedPainelRoute,
   AuthenticatedProgramacaoRoute: AuthenticatedProgramacaoRoute,
+  AuthenticatedProgramacaoProducaoRoute: AuthenticatedProgramacaoProducaoRoute,
   AuthenticatedBoletimIdRoute: AuthenticatedBoletimIdRoute,
   AuthenticatedBoletimNovoRoute: AuthenticatedBoletimNovoRoute,
 }
