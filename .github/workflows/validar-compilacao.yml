@@ -1,0 +1,25 @@
+name: Validar compilacao
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main, "ci/**"]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar codigo
+        uses: actions/checkout@v4
+      - name: Configurar Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Instalar dependencias
+        run: bun install --frozen-lockfile
+      - name: Compilar aplicacao
+        run: bun run build
