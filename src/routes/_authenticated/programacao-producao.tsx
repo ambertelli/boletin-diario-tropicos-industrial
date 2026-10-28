@@ -9,6 +9,10 @@ import { Button } from "@/components/ui/button";
 
 type Product = { id: string; embaladeira: number; name: string; formato: string; metragem: number; rolos_por_pacote: number; pacotes_por_fardo: number; sort_order: number };
 type Item = { id: string; embaladeira: number; prioridade: number; product_id: string | null; fardos: number; turno_06_12: number; turno_12_18: number; turno_18_00: number; turno_00_06: number; products?: Product | null };
+type ProducaoBoletim = { secao?: string; marca?: string; formato?: string; metros?: string; quantidade?: number };
+const normalizar = (v: unknown) => String(v ?? "").trim().toLocaleLowerCase("pt-BR").replace(/\s+/g, " ");
+const secaoDaLinha = (linha: number) => linha <= 5 ? `emb${linha}` : linha === 6 ? "guardanapo" : linha === 7 ? "rolao" : "interfolha";
+const chaveProducao = (secao: string, marca: unknown, formato: unknown, metros: unknown) => [secao, normalizar(marca), normalizar(formato), normalizar(metros)].join("|");
 
 export const Route = createFileRoute("/_authenticated/programacao-producao")({
   validateSearch: (search: Record<string, unknown>): { data?: string } => {
@@ -52,6 +56,23 @@ function ProgramacaoProducao() {
     qc.invalidateQueries({ queryKey: ["planner-products"] });
     qc.invalidateQueries({ queryKey: ["planner-schedule", date] });
   };
+  // Lê a produção real registrada pelos usuários nos boletins dos turnos.
+  const producaoBoletins = useQuery({
+    queryKey: ["planner-actual-production", date],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("boletins").select("producao").eq("data", date);
+      if (error) throw error;
+      const totals: Record<string, number> = {};
+      for (const boletim of (data ?? []) as { producao: ProducaoBoletim[] | null }[]) {
+        for (const linha of Array.isArray(boletim.producao) ? boletim.producao : []) {
+          if (!linha.marca && !linha.formato) continue;
+          const key = chaveProducao(String(linha.secao ?? ""), linha.marca, linha.formato, linha.metros);
+          totals[key] = (totals[key] ?? 0) + (Number(linha.quantidade) || 0);
+        }
+      }
+      return totals;
+    },
+  });
   async function addProduct(e: React.FormEvent) {
     e.preventDefault();
     if (!novo.name.trim() || !novo.formato.trim()) return toast.error("Informe nome e formato do produto.");
@@ -120,16 +141,21 @@ function ProgramacaoProducao() {
   const productFor = (id: string | null) => produtos.find(p => p.id === id);
   const fardosTotal = items.reduce((n, i) => n + Number(i.fardos || 0), 0);
   const produzido = items.reduce((n, i) => n + Number(i.turno_06_12 || 0) + Number(i.turno_12_18 || 0) + Number(i.turno_18_00 || 0) + Number(i.turno_00_06 || 0), 0);
+  const produzidoNoBoletim = Object.values(producaoBoletins.data ?? {}).reduce((n, v) => n + Number(v || 0), 0);
+  const chaveDoItem = (i: Item) => {
+    const p = productFor(i.product_id);
+    return chaveProducao(secaoDaLinha(i.embaladeira), p?.name, p?.formato, p?.metragem);
+  };
 
   return <div className="space-y-6">
     <div className="flex flex-wrap items-end justify-between gap-3">
       <div><h1 className="font-display text-3xl font-bold">Programação de produção</h1><p className="text-muted-foreground">{dataBR(date)} · Planejamento por embaladeira e turno</p></div>
       <Input aria-label="Data da programação" type="date" className="w-44" value={date} onChange={e => navigate({ search: { data: e.target.value } })} />
     </div>
-    <div className="grid gap-3 sm:grid-cols-3">
+    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
       <Metric label="Itens programados" value={String(items.length)} />
       <Metric label="Fardos programados" value={fardosTotal.toLocaleString("pt-BR")} />
-      <Metric label="Produção lançada nos turnos" value={produzido.toLocaleString("pt-BR")} />
+      <Metric label="Turnos planejados" value={produzido.toLocaleString("pt-BR")} /><Metric label="Produção lançada no boletim" value={produzidoNoBoletim.toLocaleString("pt-BR")} />
     </div>
     <section className="overflow-hidden rounded-md border bg-card">
       <div className="sheet-title">Cadastro rápido de produto</div>
@@ -158,11 +184,11 @@ function ProgramacaoProducao() {
         <Button disabled={saving || !produtos.length}>Adicionar à programação</Button>
       </form>
       {catalog.isLoading || schedule.isLoading ? <p className="p-4 text-sm text-muted-foreground">Carregando programação…</p> : (schedule.isError || catalog.isError) ? <p className="p-4 text-sm text-destructive">Não foi possível carregar. Confira se a migração foi aplicada e tente novamente.</p> : !items.length ? <p className="p-4 text-sm text-muted-foreground">Nenhum item programado nesta data. Cadastre um produto e adicione-o à programação.</p> :
-      <div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className="text-left"><th className="sheet-th">Linha / produto</th><th className="sheet-th">Fardos</th><th className="sheet-th">06–12</th><th className="sheet-th">12–18</th><th className="sheet-th">18–00</th><th className="sheet-th">00–06</th><th className="sheet-th">Saldo</th><th className="sheet-th"/></tr></thead><tbody>
-      {items.map(i=>{const p=productFor(i.product_id); const prod=Number(i.turno_06_12||0)+Number(i.turno_12_18||0)+Number(i.turno_18_00||0)+Number(i.turno_00_06||0); return <tr key={i.id} className="border-t"><td className="px-2 py-2"><div className="font-medium">{p?.name ?? "Produto removido"}</div><div className="text-xs text-muted-foreground">Linha {i.embaladeira} · {p?.formato ?? ""} · {p?.metragem ?? 0}m</div></td><td className="px-2"><Input aria-label="Fardos programados" className="w-20" type="number" min="0" defaultValue={i.fardos} onBlur={e=>updateItem(i.id,"fardos",Number(e.target.value)||0)}/></td>{(["turno_06_12","turno_12_18","turno_18_00","turno_00_06"] as const).map((f,j)=><td className="px-2" key={f}><Input aria-label={["Turno 06 às 12","Turno 12 às 18","Turno 18 às 00","Turno 00 às 06"][j]} className="w-20" type="number" min="0" defaultValue={i[f]} onBlur={e=>updateItem(i.id,f,Number(e.target.value)||0)}/></td>)}<td className={`px-2 font-semibold ${Number(i.fardos)-prod<0?"text-green-600":"text-destructive"}`}>{(Number(i.fardos)-prod).toLocaleString("pt-BR")}</td><td><Button variant="ghost" size="sm" onClick={()=>removeItem(i.id)}>Excluir</Button></td></tr>})}
+      <div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className="text-left"><th className="sheet-th">Linha / produto</th><th className="sheet-th">Fardos</th><th className="sheet-th">06–12</th><th className="sheet-th">12–18</th><th className="sheet-th">18–00</th><th className="sheet-th">00–06</th><th className="sheet-th">Produzido no boletim</th><th className="sheet-th">Saldo real</th><th className="sheet-th"/></tr></thead><tbody>
+      {items.map((i,idx)=>{const p=productFor(i.product_id); const key=chaveDoItem(i); const totalReal=Number(producaoBoletins.data?.[key]||0); const planejadoAntes=items.slice(0,idx).filter(prev=>chaveDoItem(prev)===key).reduce((n,prev)=>n+Number(prev.fardos||0),0); const produzidoReal=Math.min(Number(i.fardos||0),Math.max(0,totalReal-planejadoAntes)); const saldoReal=Number(i.fardos||0)-produzidoReal; return <tr key={i.id} className="border-t"><td className="px-2 py-2"><div className="font-medium">{p?.name ?? "Produto removido"}</div><div className="text-xs text-muted-foreground">Linha {i.embaladeira} · {p?.formato ?? ""} · {p?.metragem ?? 0}m</div></td><td className="px-2"><Input aria-label="Fardos programados" className="w-20" type="number" min="0" defaultValue={i.fardos} onBlur={e=>updateItem(i.id,"fardos",Number(e.target.value)||0)}/></td>{(["turno_06_12","turno_12_18","turno_18_00","turno_00_06"] as const).map((f,j)=><td className="px-2" key={f}><Input aria-label={["Turno 06 às 12","Turno 12 às 18","Turno 18 às 00","Turno 00 às 06"][j]} className="w-20" type="number" min="0" defaultValue={i[f]} onBlur={e=>updateItem(i.id,f,Number(e.target.value)||0)}/></td>)}<td className="px-2 font-medium">{producaoBoletins.isLoading ? "…" : produzidoReal.toLocaleString("pt-BR")}</td><td className={`px-2 font-semibold ${saldoReal<=0?"text-green-600":"text-destructive"}`}>{producaoBoletins.isError ? "—" : saldoReal.toLocaleString("pt-BR")}</td><td><Button variant="ghost" size="sm" onClick={()=>removeItem(i.id)}>Excluir</Button></td></tr>})}
       </tbody></table></div>}
     </section>
-    <p className="text-xs text-muted-foreground">Esta programação é armazenada separadamente da programação antiga até a validação do mapeamento. Os dados existentes do boletim não são modificados.</p>
+    <p className="text-xs text-muted-foreground">O produzido e o saldo real são calculados automaticamente com os lançamentos dos boletins da mesma data, linha, marca, formato e metragem. A programação original é preservada; editar ou excluir um boletim recalcula o saldo.</p>
   </div>;
 }
 function Metric({label,value}:{label:string;value:string}) { return <div className="rounded-md border bg-card p-4"><div className="text-sm font-semibold uppercase text-muted-foreground">{label}</div><div className="font-display text-3xl font-bold">{value}</div></div>; }
