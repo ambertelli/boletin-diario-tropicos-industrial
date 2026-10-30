@@ -1,6 +1,7 @@
 import { queryOptions } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { Acidente, ItemProgramacao, LinhaProducao, Ocorrencia, Parada } from "./producao";
+import { buscarProgramacaoEspelho } from "./espelho.functions";
 
 export type Boletim = {
   id: string;
@@ -15,10 +16,21 @@ export type Boletim = {
   observacoes: string;
 };
 
+export const espelhoQuery = (data: string) =>
+  queryOptions({
+    queryKey: ["programacao-espelho", data],
+    queryFn: () => buscarProgramacaoEspelho({ data: { data } }),
+  });
+
+/** Programação usada no saldo: a do app Programação Diária quando existir; senão a manual. */
 export const programacaoQuery = (data: string) =>
   queryOptions({
     queryKey: ["programacao", data],
     queryFn: async () => {
+      try {
+        const esp = await buscarProgramacaoEspelho({ data: { data } });
+        if (esp.ok && esp.itens.length) return esp.itens.map((i) => ({ ...i, data }));
+      } catch { /* sem internet ou sem integração: usa a manual */ }
       const { data: rows, error } = await supabase.from("programacao_itens").select("*").eq("data", data).order("created_at");
       if (error) throw error;
       return rows as (ItemProgramacao & { data: string })[];
