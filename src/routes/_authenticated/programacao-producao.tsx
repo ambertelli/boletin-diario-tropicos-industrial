@@ -8,7 +8,7 @@ import { Progress } from "@/components/ui/progress";
 
 export const Route = createFileRoute("/_authenticated/programacao-producao")({
   validateSearch: (search: Record<string, unknown>): { data?: string } => {
-    const d = search.data;
+    const d = search["data"];
     return typeof d === "string" && /^\d{4}-\d{2}-\d{2}$/.test(d) ? { data: d } : {};
   },
   head: () => ({ meta: [{ title: "Programação de produção – Diário de Produção" }] }),
