@@ -55,11 +55,12 @@ const AuthenticatedProgramacaoRoute =
     path: '/programacao',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedProgramacaoProducaoRoute = AuthenticatedProgramacaoProducaoRouteImport.update({
-  id: '/programacao-producao',
-  path: '/programacao-producao',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
+const AuthenticatedProgramacaoProducaoRoute =
+  AuthenticatedProgramacaoProducaoRouteImport.update({
+    id: '/programacao-producao',
+    path: '/programacao-producao',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedBoletimIdRoute = AuthenticatedBoletimIdRouteImport.update({
   id: '/boletim/$id',
   path: '/boletim/$id',
@@ -127,6 +128,7 @@ export interface FileRouteTypes {
     | '/historico'
     | '/painel'
     | '/programacao'
+    | '/programacao-producao'
     | '/boletim/$id'
     | '/boletim/novo'
   id:
@@ -193,18 +195,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPainelRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/programacao-producao': {
-      id: '/_authenticated/programacao-producao'
-      path: '/programacao-producao'
-      fullPath: '/programacao-producao'
-      preLoaderRoute: typeof AuthenticatedProgramacaoProducaoRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/programacao': {
       id: '/_authenticated/programacao'
       path: '/programacao'
       fullPath: '/programacao'
       preLoaderRoute: typeof AuthenticatedProgramacaoRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/programacao-producao': {
+      id: '/_authenticated/programacao-producao'
+      path: '/programacao-producao'
+      fullPath: '/programacao-producao'
+      preLoaderRoute: typeof AuthenticatedProgramacaoProducaoRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/boletim/$id': {
