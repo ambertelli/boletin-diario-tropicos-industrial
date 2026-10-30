@@ -38,3 +38,12 @@ describe("total do boletim", () => {
     ).toBe(1357);
   });
 });
+
+import { itemEspelhoParaProgramacao } from "./espelho";
+describe("espelho da Programação Diária", () => {
+  it("100 fardos programados − 30 lançados = saldo 70", () => {
+    const p = itemEspelhoParaProgramacao({ id: "x", embaladeira: 1, prioridade: 1, produto: "Fofopel", formato: "16/4", metragem: 30, fardos: 100 });
+    const { itens } = calcularSaldos([p], [l("emb1", "Fofopel", "16/4", "30m", 30)]);
+    expect(itens[0]!.saldo).toBe(70);
+  });
+});
