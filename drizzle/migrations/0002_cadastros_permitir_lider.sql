@@ -1,0 +1,2 @@
+ALTER TABLE public.cadastros DROP CONSTRAINT cadastros_tipo_check;
+ALTER TABLE public.cadastros ADD CONSTRAINT cadastros_tipo_check CHECK (tipo = ANY (ARRAY['marca'::text,'formato'::text,'metros'::text,'lider'::text]));

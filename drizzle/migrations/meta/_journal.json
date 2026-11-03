@@ -15,6 +15,13 @@
       "when": 1793360637867,
       "tag": "0001_restrict_to_approved_leaders",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793712497710,
+      "tag": "0002_cadastros_permitir_lider",
+      "breakpoints": true
     }
   ]
 }
