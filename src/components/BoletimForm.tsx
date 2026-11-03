@@ -165,14 +165,7 @@ export function BoletimForm({ inicial, id }: { inicial: Form; id?: string }) {
           <datalist id="bl-lideres">{opts("lider")}</datalist>
         </div>
 
-        <div className="sheet-title border-t">Controle de Produção Diária</div>
-        <div className="grid md:grid-cols-2">
-          {SECOES.filter((s) => s.total).map((s) => (
-            <SecaoTabela key={s.id} s={s} linhas={f.producao} setLinha={setLinha} addLinha={addLinha} saldoDe={saldoDe} />
-          ))}
-        </div>
-
-        <div className="grid grid-cols-3 border-t text-center">
+        <div className="grid grid-cols-3 border-t border-b text-center">
           {[["TOTAL", total], ["Acumulado/dia", acumDia], ["Acumulado mês", acumMes]].map(([l, v], i) => (
             <div key={l as string} className="border-r last:border-r-0">
               <div className="bg-sheet-head py-1 text-sm font-bold">{l}</div>
@@ -180,6 +173,14 @@ export function BoletimForm({ inicial, id }: { inicial: Form; id?: string }) {
             </div>
           ))}
         </div>
+
+        <div className="sheet-title border-t">Controle de Produção Diária</div>
+        <div className="grid md:grid-cols-2">
+          {SECOES.filter((s) => s.total).map((s) => (
+            <SecaoTabela key={s.id} s={s} linhas={f.producao} setLinha={setLinha} addLinha={addLinha} saldoDe={saldoDe} />
+          ))}
+        </div>
+
 
         {SECOES.filter((s) => !s.total).map((s) => (
           <div key={s.id}>
