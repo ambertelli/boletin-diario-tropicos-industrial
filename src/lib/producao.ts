@@ -11,10 +11,10 @@ export const SECOES: { id: Secao; titulo: string; medida: string; marca: boolean
   { id: "emb3", titulo: "Embaladeira Nº 3 - 8 Rolos", medida: "Metros", marca: true, formato: true, total: true },
   { id: "emb4", titulo: "Embaladeira Nº 4 - 12/16 Rolos", medida: "Metros", marca: true, formato: true, total: true },
   { id: "emb5", titulo: "Embaladeira Nº 5 - Toalha 2 Rolos", medida: "Folhas", marca: true, formato: true, total: true },
-  { id: "segunda", titulo: "Produção de Segunda Escolha", medida: "Metros", marca: false, formato: true, total: false },
   { id: "guardanapo", titulo: "Produção de Guardanapos", medida: "", marca: true, formato: true, total: false },
   { id: "rolao", titulo: "Produção de Rolão", medida: "Metros", marca: true, formato: false, total: false },
   { id: "interfolha", titulo: "Produção de Interfolhas", medida: "", marca: true, formato: true, total: false },
+  { id: "segunda", titulo: "Produção de Segunda Escolha", medida: "Metros", marca: true, formato: true, total: false },
 ];
 
 export type LinhaProducao = { secao: Secao; marca: string; formato: string; metros: string; quantidade: number };

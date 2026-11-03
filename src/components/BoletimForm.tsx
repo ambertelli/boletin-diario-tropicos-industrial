@@ -50,7 +50,15 @@ export function BoletimForm({ inicial, id }: { inicial: Form; id?: string }) {
   const saldoDe = (l: LinhaProducao) => itens.find((i) => chave(i.marca, i.formato, i.metros) === chave(l.marca, l.formato, l.metros));
 
   const setLinha = (idx: number, k: keyof LinhaProducao, v: string) =>
-    setF((p) => ({ ...p, producao: p.producao.map((l, i) => (i === idx ? { ...l, [k]: k === "quantidade" ? Number(v) || 0 : v } : l)) }));
+    setF((p) => ({ ...p, producao: p.producao.map((l, i) => {
+      if (i !== idx) return l;
+      if (k === "quantidade") return { ...l, quantidade: Number(v) || 0 };
+      if (k === "marca") {
+        const it = (prog.data ?? []).find((x) => x.marca.trim().toLowerCase() === v.trim().toLowerCase());
+        return { ...l, marca: v, formato: it?.formato ?? "", metros: it?.metros ?? "" };
+      }
+      return { ...l, [k]: v };
+    }) }));
   const addLinha = (secao: Secao) => setF((p) => {
     const last = p.producao.map((l) => l.secao).lastIndexOf(secao);
     const arr = [...p.producao];
@@ -117,14 +125,15 @@ export function BoletimForm({ inicial, id }: { inicial: Form; id?: string }) {
   }
 
   const opts = (t: string) => (cad.data ?? []).filter((c) => c.tipo === t).map((c) => <option key={c.id} value={c.nome} />);
-  const progOpts = (k: "marca" | "formato" | "metros") =>
-    [...new Set((prog.data ?? []).map((p) => p[k]))].map((v) => <option key={"p" + v} value={v} />);
 
   return (
     <div className="space-y-4">
-      <datalist id="bm">{progOpts("marca")}{opts("marca")}</datalist>
-      <datalist id="bf">{progOpts("formato")}{opts("formato")}</datalist>
-      <datalist id="bt">{progOpts("metros")}{opts("metros")}</datalist>
+      {SECOES.map((s, n) => {
+        const todos = (prog.data ?? []) as { marca: string; embaladeira?: number }[];
+        const daSecao = s.total ? todos.filter((x) => x.embaladeira === n + 1) : [];
+        const lista = [...new Set((daSecao.length ? daSecao : todos).map((x) => x.marca))];
+        return <datalist key={s.id} id={"bm-" + s.id}>{lista.map((v) => <option key={v} value={v} />)}{opts("marca")}</datalist>;
+      })}
 
       <div className="no-print flex flex-wrap justify-end gap-2">
         {id && <Button variant="ghost" onClick={excluir}>Excluir</Button>}
@@ -263,9 +272,7 @@ function SecaoTabela({ s, linhas, setLinha, addLinha, saldoDe, semTitulo }: {
       {!semTitulo && <div className="border-b py-1 text-center text-sm font-bold">{s.titulo}</div>}
       <table className="w-full text-sm">
         <thead><tr>
-          {s.marca && <th className="sheet-th">Marca</th>}
-          {s.formato && <th className="sheet-th">Formato</th>}
-          {s.medida && <th className="sheet-th w-20">{s.medida}</th>}
+          <th className="sheet-th">Marca</th>
           <th className="sheet-th w-24">Produção</th>
           <th className="sheet-th no-print w-24">Saldo prog.</th>
         </tr></thead>
@@ -275,9 +282,7 @@ function SecaoTabela({ s, linhas, setLinha, addLinha, saldoDe, semTitulo }: {
             const sd = l.marca ? saldoDe(l) : undefined;
             return (
               <tr key={i} className="border-t">
-                {s.marca && <td className="border-r"><input list="bm" className="sheet-cell" value={l.marca} onChange={(e) => setLinha(i, "marca", e.target.value)} /></td>}
-                {s.formato && <td className="border-r"><input list="bf" className="sheet-cell" value={l.formato} onChange={(e) => setLinha(i, "formato", e.target.value)} /></td>}
-                {s.medida && <td className="border-r"><input list="bt" className="sheet-cell" value={l.metros} onChange={(e) => setLinha(i, "metros", e.target.value)} /></td>}
+                <td className="border-r"><input list={"bm-" + s.id} className="sheet-cell" value={l.marca} onChange={(e) => setLinha(i, "marca", e.target.value)} /></td>
                 <td className="border-r"><input type="number" min={0} className="sheet-cell text-right font-semibold" value={l.quantidade || ""} onChange={(e) => setLinha(i, "quantidade", e.target.value)} /></td>
                 <td className={`no-print px-2 text-right text-xs ${sd ? (sd.saldo <= 0 ? "text-success" : "text-primary") : "text-muted-foreground"}`}>
                   {sd ? fmt(sd.saldo) : l.marca ? "fora" : ""}
