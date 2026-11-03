@@ -161,7 +161,8 @@ export function BoletimForm({ inicial, id }: { inicial: Form; id?: string }) {
         </div>
         <div className="grid grid-cols-[auto_1fr] text-sm">
           <div className="border-r px-2 py-1.5 font-semibold">Líder</div>
-          <input className="sheet-cell font-bold" value={f.lider} onChange={(e) => setF({ ...f, lider: e.target.value })} />
+          <input className="sheet-cell font-bold" list="bl-lideres" value={f.lider} onChange={(e) => setF({ ...f, lider: e.target.value })} />
+          <datalist id="bl-lideres">{opts("lider")}</datalist>
         </div>
 
         <div className="sheet-title border-t">Controle de Produção Diária</div>

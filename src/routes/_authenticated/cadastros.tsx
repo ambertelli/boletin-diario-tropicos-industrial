@@ -12,14 +12,15 @@ export const Route = createFileRoute("/_authenticated/cadastros")({
   component: Cadastros,
 });
 
-const TIPOS = [["marca", "Marcas"], ["formato", "Formatos"], ["metros", "Metros / Folhas"]] as const;
+const TIPOS = [["marca", "Marcas"], ["formato", "Formatos"], ["metros", "Metros / Folhas"], ["lider", "Líderes"]] as const;
 
 function Cadastros() {
   const q = useQuery(cadastrosQuery);
   return (
     <div className="space-y-4">
       <h1 className="font-display text-3xl font-bold">Cadastros</h1>
-      <div className="grid gap-4 md:grid-cols-3">
+      <p className="text-sm text-muted-foreground">Itens cadastrados aqui aparecem nas listas do Boletim.</p>
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {TIPOS.map(([t, l]) => <Lista key={t} tipo={t} titulo={l} itens={(q.data ?? []).filter((c) => c.tipo === t)} />)}
       </div>
     </div>
