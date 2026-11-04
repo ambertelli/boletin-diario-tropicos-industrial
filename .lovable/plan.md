@@ -13,7 +13,7 @@ No Boletim, Guardanapo, Rolão e Interfolha passam a ficar em caixas lado a lado
 
 - Cada caixa tem as mesmas colunas: Marca, Produção e Saldo prog.
 - **Segunda Escolha** fica como está hoje (faixa separada embaixo), com lançamento livre, sem depender da programação diária.
-- O TOTAL continua somando só as embaladeiras 1 a 5, como hoje.
+- O TOTAL, o Acumulado/dia e o Acumulado mês passam a somar as 8 linhas (Embaladeiras 1 a 5 + Guardanapo, Rolão e Interfolha). A Segunda Escolha não entra no TOTAL.
 
 ## Segunda Escolha com lista própria
 
