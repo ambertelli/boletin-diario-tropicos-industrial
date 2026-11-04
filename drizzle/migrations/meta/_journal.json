@@ -22,6 +22,13 @@
       "when": 1793712497710,
       "tag": "0002_cadastros_permitir_lider",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1793792727661,
+      "tag": "0003_cadastros_permitir_segunda",
+      "breakpoints": true
     }
   ]
 }

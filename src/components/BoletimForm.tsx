@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { boletinsDiaQuery, boletinsMesQuery, cadastrosQuery, programacaoQuery, type Boletim } from "@/lib/dados";
 import { enfileirar, erroDeRede } from "@/lib/fila";
 import {
-  HORARIOS, SECOES, TURMAS, calcularSaldos, chave, fmt, totalBoletim,
+  HORARIOS, SECOES, SEGUNDA_METRAGENS, SEGUNDA_PRODUTOS, TURMAS, calcularSaldos, chave, fmt, totalBoletim,
   type Acidente, type LinhaProducao, type Ocorrencia, type Parada, type Secao,
 } from "@/lib/producao";
 import { SaldoTabela } from "@/components/SaldoTabela";
@@ -45,7 +45,7 @@ export function BoletimForm({ inicial, id }: { inicial: Form; id?: string }) {
   const total = totalBoletim(linhasValidas);
   const acumDia = outrosDia.reduce((a, b) => a + totalBoletim(b.producao), 0) + total;
   const acumMes = (mes.data ?? []).filter((b) => b.id !== id && b.data <= f.data).reduce((a, b) => a + totalBoletim(b.producao), 0) + total;
-  const todasLinhas = [...outrosDia.flatMap((b) => b.producao), ...linhasValidas];
+  const todasLinhas = [...outrosDia.flatMap((b) => b.producao), ...linhasValidas].filter((l) => l.secao !== "segunda");
   const { itens } = calcularSaldos(prog.data ?? [], todasLinhas);
   const saldoDe = (l: LinhaProducao) => itens.find((i) => chave(i.marca, i.formato, i.metros) === chave(l.marca, l.formato, l.metros));
 
@@ -124,6 +124,15 @@ export function BoletimForm({ inicial, id }: { inicial: Form; id?: string }) {
     navigate({ to: "/historico" });
   }
 
+  async function cadastrarSegunda() {
+    const nome = prompt("Nome do novo produto da Segunda Escolha:")?.trim();
+    if (!nome) return;
+    const { error } = await supabase.from("cadastros").insert({ tipo: "segunda", nome });
+    if (error) { toast.error(error.code === "23505" ? "Já cadastrado" : error.message); return; }
+    toast.success("Produto cadastrado");
+    qc.invalidateQueries({ queryKey: ["cadastros"] });
+  }
+
   const opts = (t: string) => (cad.data ?? []).filter((c) => c.tipo === t).map((c) => <option key={c.id} value={c.nome} />);
 
   return (
@@ -190,7 +199,7 @@ export function BoletimForm({ inicial, id }: { inicial: Form; id?: string }) {
         {SECOES.filter((s) => !s.total).map((s) => (
           <div key={s.id}>
             <div className="sheet-title border-t bg-sheet-head">{s.titulo}</div>
-            <SecaoTabela s={s} linhas={f.producao} setLinha={setLinha} addLinha={addLinha} saldoDe={saldoDe} semTitulo />
+            <SegundaTabela linhas={f.producao} setLinha={setLinha} addLinha={addLinha} produtos={[...SEGUNDA_PRODUTOS, ...(cad.data ?? []).filter((c) => c.tipo === "segunda").map((c) => c.nome)]} onCadastrar={cadastrarSegunda} />
           </div>
         ))}
 
@@ -258,6 +267,49 @@ function Cab({ label, children }: { label: string; children: React.ReactNode }) 
 
 function AddBtn({ onClick }: { onClick: () => void }) {
   return <button type="button" onClick={onClick} className="no-print w-full border-t py-1 text-xs text-muted-foreground hover:bg-muted">+ linha</button>;
+}
+
+function SegundaTabela({ linhas, setLinha, addLinha, produtos, onCadastrar }: {
+  linhas: LinhaProducao[];
+  setLinha: (i: number, k: keyof LinhaProducao, v: string) => void;
+  addLinha: (s: Secao) => void;
+  produtos: string[];
+  onCadastrar: () => void;
+}) {
+  const idxs = linhas.map((l, i) => (l.secao === "segunda" ? i : -1)).filter((i) => i >= 0);
+  return (
+    <div>
+      <table className="w-full text-sm">
+        <thead><tr><th className="sheet-th">Produto</th><th className="sheet-th w-32">Metragem</th><th className="sheet-th w-24">Produção</th></tr></thead>
+        <tbody>
+          {idxs.map((i) => {
+            const l = linhas[i]!;
+            return (
+              <tr key={i} className="border-t">
+                <td className="border-r">
+                  <select className="sheet-cell" value={l.marca} onChange={(e) => setLinha(i, "formato", "") || setLinha(i, "marca", e.target.value)}>
+                    <option value="" />
+                    {[...new Set([...produtos, ...(l.marca ? [l.marca] : [])])].map((p) => <option key={p}>{p}</option>)}
+                  </select>
+                </td>
+                <td className="border-r">
+                  <select className="sheet-cell" value={l.metros} onChange={(e) => setLinha(i, "metros", e.target.value)}>
+                    <option value="" />
+                    {SEGUNDA_METRAGENS.map((m) => <option key={m}>{m}</option>)}
+                  </select>
+                </td>
+                <td><input type="number" min={0} className="sheet-cell text-right font-semibold" value={l.quantidade || ""} onChange={(e) => setLinha(i, "quantidade", e.target.value)} /></td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+      <div className="no-print flex border-t">
+        <button type="button" onClick={() => addLinha("segunda")} className="flex-1 py-1 text-xs text-muted-foreground hover:bg-muted">+ linha</button>
+        <button type="button" onClick={onCadastrar} className="flex-1 border-l py-1 text-xs text-primary hover:bg-muted">+ cadastrar produto</button>
+      </div>
+    </div>
+  );
 }
 
 function SecaoTabela({ s, linhas, setLinha, addLinha, saldoDe, semTitulo }: {

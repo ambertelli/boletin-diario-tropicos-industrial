@@ -25,9 +25,10 @@ describe("débito da programação", () => {
 });
 
 describe("total do boletim", () => {
-  it("modelo 13/10 turma D soma 1.357 só nas embaladeiras", () => {
+  it("soma as 8 linhas (1.357 + rolão 324 + guardanapo 27 = 1.708), sem segunda escolha", () => {
     expect(
       totalBoletim([
+        l("segunda", "Higiênico", "", "30M", 50),
         l("emb1", "Trópico's F Dupla", "16/4", "30m", 157),
         l("emb1", "Fofopel", "16/4", "30m", 432),
         l("emb3", "Fofopel", "8/8", "30m", 96),
@@ -35,7 +36,7 @@ describe("total do boletim", () => {
         l("rolao", "Trópico's", "", "200m", 324),
         l("guardanapo", "Trópico's", "29,5X29,5X50", "", 27),
       ]),
-    ).toBe(1357);
+    ).toBe(1708);
   });
 });
 
