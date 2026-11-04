@@ -15,6 +15,17 @@ No Boletim, Guardanapo, Rolão e Interfolha passam a ficar em caixas lado a lado
 - **Segunda Escolha** fica como está hoje (faixa separada embaixo), com lançamento livre, sem depender da programação diária.
 - O TOTAL continua somando só as embaladeiras 1 a 5, como hoje.
 
+## Segunda Escolha com lista própria
+
+Cada linha da Segunda Escolha terá duas escolhas:
+- **Produto:** Toalha de Mão, Toalha de Cozinha, Higiênico, Folha Dupla
+- **Metragem:** 20M, 30M, 60M, 150M, 200M, 300M
+- Mais a coluna **Produção**.
+
+Embaixo da tabela, um botão **"+ cadastrar produto"** permite incluir um novo produto que aparece só na lista da Segunda Escolha (não aparece nas outras linhas). Esses produtos também aparecem na aba Cadastros, numa lista "Produtos Segunda Escolha", onde podem ser removidos.
+
+A Segunda Escolha não desconta da programação diária.
+
 ### Técnico
 - `src/lib/producao.ts`: renomear títulos de guardanapo/rolao/interfolha para "Linha 6 - Guardanapo", "Linha 7 - Rolão", "Linha 8 - Interfolha".
 - `src/components/BoletimForm.tsx`: a grade `md:grid-cols-2` passa a renderizar todas as seções exceto `segunda`; `segunda` continua no bloco de faixa larga. Datalists de linhas 6–8 usam embaladeira 6/7/8 da programação.
