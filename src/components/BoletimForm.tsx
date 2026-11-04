@@ -174,6 +174,11 @@ export function BoletimForm({ inicial, id }: { inicial: Form; id?: string }) {
           ))}
         </div>
 
+        <section className="no-print">
+          <div className="sheet-title">Saldo da programação do dia (com este boletim)</div>
+          <SaldoTabela programacao={prog.data ?? []} linhas={todasLinhas} />
+        </section>
+
         <div className="sheet-title border-t">Controle de Produção Diária</div>
         <div className="grid md:grid-cols-2">
           {SECOES.filter((s) => s.total).map((s) => (
@@ -240,11 +245,6 @@ export function BoletimForm({ inicial, id }: { inicial: Form; id?: string }) {
         <div className="sheet-title">Observações</div>
         <textarea rows={4} className="sheet-cell h-auto py-2" value={f.observacoes} onChange={(e) => setF({ ...f, observacoes: e.target.value })} />
       </div>
-
-      <section className="no-print overflow-hidden rounded-md border bg-card">
-        <div className="sheet-title">Saldo da programação do dia (com este boletim)</div>
-        <SaldoTabela programacao={prog.data ?? []} linhas={todasLinhas} />
-      </section>
     </div>
   );
 }
