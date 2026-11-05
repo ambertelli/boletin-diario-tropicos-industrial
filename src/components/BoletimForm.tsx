@@ -1,3 +1,4 @@
+import logoAsset from "@/assets/logo-tropicos.png.asset.json";
 import { useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
@@ -152,7 +153,7 @@ export function BoletimForm({ inicial, id }: { inicial: Form; id?: string }) {
 
       <div className="overflow-hidden rounded-md border bg-card">
         <div className="flex items-center border-b">
-          <div className="bg-primary px-4 py-2 font-display text-2xl font-bold text-primary-foreground">TRÓPICO'S</div>
+          <img src={logoAsset.url} alt="Trópico's" className="h-12" />
           <div className="flex-1 bg-section py-3 text-center font-display text-lg font-bold">BOLETIM CONVERSÃO</div>
         </div>
         <div className="grid grid-cols-2 border-b text-sm sm:grid-cols-6">

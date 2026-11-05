@@ -1,3 +1,4 @@
+import logoAsset from "@/assets/logo-tropicos.png.asset.json";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import type { ReactNode } from "react";
@@ -29,7 +30,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <header className="no-print bg-sidebar text-sidebar-foreground">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3">
           <Link to="/painel" className="font-display text-xl font-bold tracking-wide">
-            <span className="text-sidebar-primary">TRÓPICO'S</span> · Diário de Produção
+            <img src={logoAsset.url} alt="Trópico's" className="inline h-9 align-middle" /> · Diário de Produção
           </Link>
           <nav className="flex flex-1 flex-wrap gap-1">
             {links.map((l) => (
