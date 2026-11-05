@@ -12,7 +12,7 @@ export const Route = createFileRoute("/_authenticated/cadastros")({
   component: Cadastros,
 });
 
-const TIPOS = [["marca", "Marcas"], ["formato", "Formatos"], ["metros", "Metros / Folhas"], ["lider", "Líderes"]] as const;
+const TIPOS = [["marca", "Marcas"], ["formato", "Formatos"], ["metros", "Metros / Folhas"], ["lider", "Líderes"], ["segunda", "Produtos Segunda Escolha"]] as const;
 
 function Cadastros() {
   const q = useQuery(cadastrosQuery);

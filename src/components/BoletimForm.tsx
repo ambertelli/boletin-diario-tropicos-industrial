@@ -53,7 +53,7 @@ export function BoletimForm({ inicial, id }: { inicial: Form; id?: string }) {
     setF((p) => ({ ...p, producao: p.producao.map((l, i) => {
       if (i !== idx) return l;
       if (k === "quantidade") return { ...l, quantidade: Number(v) || 0 };
-      if (k === "marca") {
+      if (k === "marca" && l.secao !== "segunda") {
         const it = (prog.data ?? []).find((x) => x.marca.trim().toLowerCase() === v.trim().toLowerCase());
         return { ...l, marca: v, formato: it?.formato ?? "", metros: it?.metros ?? "" };
       }
@@ -287,7 +287,7 @@ function SegundaTabela({ linhas, setLinha, addLinha, produtos, onCadastrar }: {
             return (
               <tr key={i} className="border-t">
                 <td className="border-r">
-                  <select className="sheet-cell" value={l.marca} onChange={(e) => setLinha(i, "formato", "") || setLinha(i, "marca", e.target.value)}>
+                  <select className="sheet-cell" value={l.marca} onChange={(e) => setLinha(i, "marca", e.target.value)}>
                     <option value="" />
                     {[...new Set([...produtos, ...(l.marca ? [l.marca] : [])])].map((p) => <option key={p}>{p}</option>)}
                   </select>
