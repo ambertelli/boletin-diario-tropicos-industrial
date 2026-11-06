@@ -60,11 +60,11 @@ function ProgramacaoProducao() {
         <section key={emb} className="overflow-hidden rounded-md border bg-card">
           <div className="sheet-title">{nomeLinha(emb)}</div>
           <div className="overflow-x-auto"><table className="w-full text-sm">
-            <thead><tr className="text-left"><th className="sheet-th">Prior.</th><th className="sheet-th">Produto</th><th className="sheet-th">Formato</th><th className="sheet-th">Metros</th><th className="sheet-th text-right">Programado</th><th className="sheet-th text-right">Produzido</th><th className="sheet-th text-right">Saldo</th><th className="sheet-th w-40">Progresso</th></tr></thead>
+            <thead><tr className="text-left"><th className="sheet-th">Prior.</th><th className="sheet-th">Produto</th><th className="sheet-th text-right">Programado</th><th className="sheet-th text-right">Produzido</th><th className="sheet-th text-right">Saldo</th><th className="sheet-th w-40">Progresso</th></tr></thead>
             <tbody>{lista.sort((a, b) => (meta.get(a.id)?.prioridade ?? 0) - (meta.get(b.id)?.prioridade ?? 0)).map((i) => (
               <tr key={i.id} className="border-t">
                 <td className="px-2 py-1.5">{meta.get(i.id)?.prioridade}</td>
-                <td className="px-2 font-medium">{i.marca}</td><td className="px-2">{i.formato}</td><td className="px-2">{i.metros}</td>
+                <td className="px-2 font-medium">{i.marca}</td>
                 <td className="px-2 text-right">{fmt(i.quantidade)}</td><td className="px-2 text-right">{fmt(i.produzido)}</td>
                 <td className={`px-2 text-right font-semibold ${i.saldo <= 0 ? "text-success" : "text-primary"}`}>{fmt(i.saldo)}</td>
                 <td className="px-2"><Progress value={i.quantidade ? Math.min(100, (i.produzido / i.quantidade) * 100) : 0} /></td>
@@ -73,7 +73,7 @@ function ProgramacaoProducao() {
         </section>))}
     {fora.length > 0 && <section className="overflow-hidden rounded-md border bg-card">
       <div className="sheet-title">Produção fora da programação (confira nomes nos Cadastros)</div>
-      <table className="w-full text-sm"><tbody>{fora.map((f, k) => <tr key={k} className="border-t text-muted-foreground"><td className="px-2 py-1.5">{f.marca}</td><td className="px-2">{f.formato}</td><td className="px-2">{f.metros}</td><td className="px-2 text-right">{fmt(f.quantidade)}</td></tr>)}</tbody></table>
+      <table className="w-full text-sm"><tbody>{fora.map((f, k) => <tr key={k} className="border-t text-muted-foreground"><td className="px-2 py-1.5">{f.marca}</td><td className="px-2 text-right">{fmt(f.quantidade)}</td></tr>)}</tbody></table>
     </section>}
     <p className="text-xs text-muted-foreground">A programação é editada só no app Programação Diária. Produto, formato e metragem precisam ser iguais aos usados no boletim para debitar.</p>
   </div>;
