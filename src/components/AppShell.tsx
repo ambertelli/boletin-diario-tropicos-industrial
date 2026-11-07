@@ -1,4 +1,4 @@
-import logoAsset from "@/assets/logo-tropicos.png.asset.json";
+import logoAsset from "@/assets/logo-tropicos-transparente.png.asset.json";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import type { ReactNode } from "react";

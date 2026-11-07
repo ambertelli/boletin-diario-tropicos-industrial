@@ -1,4 +1,4 @@
-import logoAsset from "@/assets/logo-tropicos.png.asset.json";
+import logoAsset from "@/assets/logo-tropicos-transparente.png.asset.json";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -79,7 +79,7 @@ function AuthPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-sidebar px-4">
       <div className="w-full max-w-sm rounded-lg bg-card p-6 shadow-xl">
-        <h1><img src={logoAsset.url} alt="Trópico's" className="mb-2 w-full rounded" /></h1>
+        <h1><img src={logoAsset.url} alt="Trópico's" className="mb-2 w-full" /></h1>
         <p className="mb-6 text-sm text-muted-foreground">Diário de Produção · Boletim Conversão</p>
         {!online && (
           <p className="mb-4 rounded bg-destructive px-3 py-2 text-sm font-medium text-destructive-foreground">
