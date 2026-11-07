@@ -31,7 +31,7 @@ async function guardarTelas() {
   try {
     const c = await caches.open("paginas");
     await Promise.allSettled(
-      ["/painel", "/boletim/novo", "/programacao", "/historico", "/cadastros", "/auth"].map(async (p) => {
+      ["/painel", "/boletim/novo", "/programacao-producao", "/historico", "/cadastros", "/auth"].map(async (p) => {
         const r = await fetch(p, { credentials: "same-origin" });
         if (r.ok) await c.put(p, r);
       }),

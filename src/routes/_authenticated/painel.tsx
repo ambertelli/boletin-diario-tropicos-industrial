@@ -68,7 +68,7 @@ function Painel() {
         <div className="sheet-title">Programação diária × Produção</div>
         <SaldoTabela programacao={prog.data ?? []} linhas={linhasDia} />
         <div className="border-t p-2 text-right">
-          <Link to="/programacao" search={{ data }} className="text-sm underline">Editar programação</Link>
+          <Link to="/programacao-producao" className="text-sm underline">Ver programação</Link>
         </div>
       </section>
     </div>
