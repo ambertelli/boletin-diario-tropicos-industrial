@@ -77,7 +77,7 @@ function AuthPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-card px-4">
+    <div className="flex min-h-screen items-center justify-center bg-sidebar px-4">
       <div className="w-full max-w-sm rounded-lg bg-muted p-6 shadow-xl">
         <h1><img src={logoAsset.url} alt="Trópico's" className="mb-2 w-full" /></h1>
         <p className="mb-6 text-sm text-muted-foreground">Diário de Produção · Boletim Conversão</p>
