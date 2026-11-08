@@ -25,7 +25,7 @@ export type Parada = { maquina: string; numero: string; inicio: string; fim: str
 export type Ocorrencia = { data: string; nome: string; turno: string; ocorrencia: string };
 export type Acidente = Partial<Record<"nome" | "funcao" | "local" | "parte" | "agente" | "testemunha" | "providencias" | "descricao", string>>;
 
-export type ItemProgramacao = { id: string; marca: string; formato: string; metros: string; quantidade: number };
+export type ItemProgramacao = { id: string; marca: string; formato: string; metros: string; quantidade: number; prioridadeFabricacao?: number | null };
 
 const norm = (s: string) => (s ?? "").trim().toLowerCase().replace(/\s+/g, " ");
 export const chave = (marca: string, formato: string, metros: string) =>
