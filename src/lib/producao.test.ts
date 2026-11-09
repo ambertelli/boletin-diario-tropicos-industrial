@@ -48,3 +48,16 @@ describe("espelho da Programação Diária", () => {
     expect(itens[0]!.saldo).toBe(70);
   });
 });
+
+import { ordenarPorPrioridade } from "./espelho";
+describe("prioridade de fabricação", () => {
+  it("ordena 1, 2 e deixa sem prioridade no fim", () => {
+    const base = { formato: "", metros: "", quantidade: 1 };
+    const r = ordenarPorPrioridade([
+      { id: "a", marca: "A", prioridadeFabricacao: null, ...base },
+      { id: "b", marca: "B", prioridadeFabricacao: 2, ...base },
+      { id: "c", marca: "C", prioridadeFabricacao: 1, ...base },
+    ]);
+    expect(r.map((i) => i.id)).toEqual(["c", "b", "a"]);
+  });
+});
