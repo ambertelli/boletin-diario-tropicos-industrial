@@ -65,6 +65,25 @@ export function calcularSaldos(programacao: ItemProgramacao[], linhas: LinhaProd
   return { itens, fora };
 }
 
+/** Turnos que ainda pertencem à programação do dia anterior (ciclo 12h às 12h). */
+export const HORARIOS_DIA_SEGUINTE = new Set<string>(["00:00 as 06:00", "06:00 as 12:00"]);
+
+export function somarDias(iso: string, n: number) {
+  const [y, m, d] = iso.split("-").map(Number);
+  const dt = new Date(Date.UTC(y!, m! - 1, d! + n));
+  return dt.toISOString().slice(0, 10);
+}
+
+/** Data da programação que um turno debita: 00h–12h pertencem ao ciclo do dia anterior. */
+export function dataCiclo(data: string, horario: string) {
+  return HORARIOS_DIA_SEGUINTE.has(horario) ? somarDias(data, -1) : data;
+}
+
+/** O boletim (data + horário) pertence ao ciclo da programação `ciclo`? */
+export function pertenceAoCiclo(b: { data: string; horario: string }, ciclo: string) {
+  return dataCiclo(b.data, b.horario) === ciclo;
+}
+
 export function hojeISO() {
   const d = new Date();
   return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);

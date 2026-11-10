@@ -61,3 +61,21 @@ describe("prioridade de fabricação", () => {
     expect(r.map((i) => i.id)).toEqual(["c", "b", "a"]);
   });
 });
+
+import { dataCiclo, pertenceAoCiclo } from "./producao";
+describe("ciclo de produção 12h às 12h", () => {
+  it("turnos 00h e 06h do dia 10/11 debitam a programação de 09/11", () => {
+    expect(dataCiclo("2026-11-10", "00:00 as 06:00")).toBe("2026-11-09");
+    expect(dataCiclo("2026-11-10", "06:00 as 12:00")).toBe("2026-11-09");
+  });
+  it("turnos 12h e 18h ficam na programação do próprio dia", () => {
+    expect(dataCiclo("2026-11-09", "12:00 as 18:00")).toBe("2026-11-09");
+    expect(dataCiclo("2026-11-09", "18:00 as 24:00")).toBe("2026-11-09");
+  });
+  it("vira o mês corretamente", () => {
+    expect(dataCiclo("2026-12-01", "00:00 as 06:00")).toBe("2026-11-30");
+  });
+  it("00h do dia 09/11 não pertence ao ciclo de 09/11", () => {
+    expect(pertenceAoCiclo({ data: "2026-11-09", horario: "00:00 as 06:00" }, "2026-11-09")).toBe(false);
+  });
+});

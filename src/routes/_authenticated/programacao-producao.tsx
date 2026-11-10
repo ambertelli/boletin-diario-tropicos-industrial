@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { hojeISO, dataBR, calcularSaldos, fmt } from "@/lib/producao";
-import { boletinsDiaQuery, espelhoQuery } from "@/lib/dados";
+import { hojeISO, dataBR, calcularSaldos, fmt, somarDias } from "@/lib/producao";
+import { boletinsCicloQuery, espelhoQuery } from "@/lib/dados";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -20,9 +20,9 @@ const nomeLinha = (n: number) => `Embaladeira ${n}`;
 function ProgramacaoProducao() {
   const search = Route.useSearch();
   const navigate = Route.useNavigate();
-  const date = search.data ?? hojeISO();
+  const date = search.data ?? (new Date().getHours() < 12 ? somarDias(hojeISO(), -1) : hojeISO());
   const esp = useQuery(espelhoQuery(date));
-  const bol = useQuery(boletinsDiaQuery(date));
+  const bol = useQuery(boletinsCicloQuery(date));
 
   const prog = esp.data?.itens ?? [];
   const linhas = (bol.data ?? []).flatMap((b) => b.producao ?? []);
@@ -40,7 +40,7 @@ function ProgramacaoProducao() {
     <div className="flex flex-wrap items-end justify-between gap-3">
       <div>
         <h1 className="font-display text-3xl font-bold">Programação de produção</h1>
-        <p className="text-muted-foreground">{dataBR(date)} · espelho do app Programação Diária, debitado pelos boletins</p>
+        <p className="text-muted-foreground">{dataBR(date)} · ciclo das 12h de {dataBR(date)} às 12h do dia seguinte, debitado pelos boletins</p>
       </div>
       <div className="flex gap-2">
         <Input aria-label="Data da programação" type="date" className="w-44" value={date} onChange={(e) => navigate({ search: { data: e.target.value } })} />

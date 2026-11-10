@@ -1,8 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { boletinsDiaQuery, boletinsMesQuery, programacaoQuery } from "@/lib/dados";
-import { HORARIOS, dataBR, fmt, hojeISO, totalBoletim } from "@/lib/producao";
+import { boletinsCicloQuery, boletinsDiaQuery, boletinsMesQuery, programacaoQuery } from "@/lib/dados";
+import { HORARIOS, dataBR, dataCiclo, fmt, hojeISO, somarDias, totalBoletim } from "@/lib/producao";
 import { SaldoTabela } from "@/components/SaldoTabela";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -12,14 +12,23 @@ export const Route = createFileRoute("/_authenticated/painel")({
   component: Painel,
 });
 
+function cicloInicial(data: string) {
+  return data === hojeISO() && new Date().getHours() < 12 ? somarDias(data, -1) : data;
+}
+
 function Painel() {
-  const [data, setData] = useState(hojeISO());
-  const prog = useQuery(programacaoQuery(data));
+  const [data, setDataState] = useState(hojeISO());
+  const [ciclo, setCiclo] = useState(() => cicloInicial(hojeISO()));
+  const setData = (d: string) => { setDataState(d); setCiclo(cicloInicial(d)); };
+  const ontem = somarDias(data, -1);
+  const prog = useQuery(programacaoQuery(ciclo));
   const dia = useQuery(boletinsDiaQuery(data));
+  const cic = useQuery(boletinsCicloQuery(ciclo));
   const mes = useQuery(boletinsMesQuery(data));
   const linhasDia = (dia.data ?? []).flatMap((b) => b.producao);
   const totalDia = totalBoletim(linhasDia);
   const totalMes = (mes.data ?? []).filter((b) => b.data <= data).reduce((a, b) => a + totalBoletim(b.producao), 0);
+  const linhasCiclo = (cic.data ?? []).flatMap((b) => b.producao).filter((l) => l.secao !== "segunda");
 
   return (
     <div className="space-y-6">
@@ -44,6 +53,7 @@ function Painel() {
             return (
               <div key={h} className="border-b p-4 sm:border-b-0 sm:border-r last:border-r-0">
                 <div className="font-display text-lg font-semibold">{h}</div>
+                <div className="text-xs font-semibold text-primary">Programação de {dataBR(dataCiclo(data, h))}</div>
                 {b ? (
                   <>
                     <div className="text-sm">Turma <b>{b.turma}</b> · {b.lider || "—"}</div>
@@ -65,10 +75,17 @@ function Painel() {
       </section>
 
       <section className="overflow-hidden rounded-md border bg-card">
-        <div className="sheet-title">Programação diária × Produção</div>
-        <SaldoTabela programacao={prog.data ?? []} linhas={linhasDia} />
+        <div className="sheet-title">Programação de {dataBR(ciclo)} × Produção</div>
+        <div className="flex flex-wrap gap-2 border-b p-2">
+          {[ontem, data].map((c) => (
+            <Button key={c} size="sm" variant={c === ciclo ? "default" : "outline"} onClick={() => setCiclo(c)}>
+              Programação de {dataBR(c)}
+            </Button>
+          ))}
+        </div>
+        <SaldoTabela programacao={prog.data ?? []} linhas={linhasCiclo} />
         <div className="border-t p-2 text-right">
-          <Link to="/programacao-producao" className="text-sm underline">Ver programação</Link>
+          <Link to="/programacao-producao" search={{ data: ciclo }} className="text-sm underline">Ver programação</Link>
         </div>
       </section>
     </div>

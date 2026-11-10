@@ -4,10 +4,10 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { boletinsDiaQuery, boletinsMesQuery, cadastrosQuery, programacaoQuery, type Boletim } from "@/lib/dados";
+import { boletinsCicloQuery, boletinsDiaQuery, boletinsMesQuery, cadastrosQuery, programacaoQuery, type Boletim } from "@/lib/dados";
 import { enfileirar, erroDeRede } from "@/lib/fila";
 import {
-  HORARIOS, SECOES, SEGUNDA_METRAGENS, SEGUNDA_PRODUTOS, TURMAS, calcularSaldos, chave, fmt, totalBoletim,
+  HORARIOS, SECOES, dataBR, dataCiclo, SEGUNDA_METRAGENS, SEGUNDA_PRODUTOS, TURMAS, calcularSaldos, chave, fmt, totalBoletim,
   type Acidente, type LinhaProducao, type Ocorrencia, type Parada, type Secao,
 } from "@/lib/producao";
 import { SaldoTabela } from "@/components/SaldoTabela";
@@ -36,8 +36,10 @@ export function BoletimForm({ inicial, id }: { inicial: Form; id?: string }) {
   const [busy, setBusy] = useState(false);
   const qc = useQueryClient();
   const navigate = useNavigate();
-  const prog = useQuery(programacaoQuery(f.data));
+  const ciclo = dataCiclo(f.data, f.horario);
+  const prog = useQuery(programacaoQuery(ciclo));
   const dia = useQuery(boletinsDiaQuery(f.data));
+  const cic = useQuery(boletinsCicloQuery(ciclo));
   const mes = useQuery(boletinsMesQuery(f.data));
   const cad = useQuery(cadastrosQuery);
 
@@ -46,7 +48,8 @@ export function BoletimForm({ inicial, id }: { inicial: Form; id?: string }) {
   const total = totalBoletim(linhasValidas);
   const acumDia = outrosDia.reduce((a, b) => a + totalBoletim(b.producao), 0) + total;
   const acumMes = (mes.data ?? []).filter((b) => b.id !== id && b.data <= f.data).reduce((a, b) => a + totalBoletim(b.producao), 0) + total;
-  const todasLinhas = [...outrosDia.flatMap((b) => b.producao), ...linhasValidas].filter((l) => l.secao !== "segunda");
+  const outrosCiclo = (cic.data ?? []).filter((b) => b.id !== id);
+  const todasLinhas = [...outrosCiclo.flatMap((b) => b.producao), ...linhasValidas].filter((l) => l.secao !== "segunda");
   const { itens } = calcularSaldos(prog.data ?? [], todasLinhas);
   const saldoDe = (l: LinhaProducao) => itens.find((i) => chave(i.marca, i.formato, i.metros) === chave(l.marca, l.formato, l.metros));
 
@@ -86,6 +89,7 @@ export function BoletimForm({ inicial, id }: { inicial: Form; id?: string }) {
       const local = { id: bid, ...payload } as unknown as Boletim;
       qc.setQueryData<Boletim[]>(["boletins", "dia", f.data], (old) => [...(old ?? []).filter((b) => b.id !== bid), local]);
       qc.setQueryData<Boletim[]>(["boletins", "mes", f.data.slice(0, 7)], (old) => [...(old ?? []).filter((b) => b.id !== bid), local]);
+      qc.setQueryData<Boletim[]>(["boletins", "ciclo", ciclo], (old) => [...(old ?? []).filter((b) => b.id !== bid), local]);
       qc.setQueryData(["boletim", bid], local);
       setBusy(false);
       toast.warning("Sem conexão — boletim guardado no aparelho e será enviado automaticamente");
@@ -185,7 +189,7 @@ export function BoletimForm({ inicial, id }: { inicial: Form; id?: string }) {
         </div>
 
         <section className="no-print">
-          <div className="sheet-title">Saldo da programação do dia (com este boletim)</div>
+          <div className="sheet-title">Saldo da programação de {dataBR(ciclo)} (com este boletim)</div>
           <SaldoTabela programacao={prog.data ?? []} linhas={todasLinhas} />
         </section>
 

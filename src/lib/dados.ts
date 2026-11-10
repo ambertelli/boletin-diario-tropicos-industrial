@@ -1,6 +1,6 @@
 import { queryOptions } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import type { Acidente, ItemProgramacao, LinhaProducao, Ocorrencia, Parada } from "./producao";
+import { pertenceAoCiclo, somarDias, type Acidente, type ItemProgramacao, type LinhaProducao, type Ocorrencia, type Parada } from "./producao";
 import { buscarProgramacaoEspelho } from "./espelho.functions";
 
 export type Boletim = {
@@ -44,6 +44,18 @@ export const boletinsDiaQuery = (data: string) =>
       const { data: rows, error } = await supabase.from("boletins").select("*").eq("data", data).order("horario");
       if (error) throw error;
       return rows as unknown as Boletim[];
+    },
+  });
+
+/** Boletins do ciclo de produção da programação `ciclo` (12h do dia até 12h do dia seguinte). */
+export const boletinsCicloQuery = (ciclo: string) =>
+  queryOptions({
+    queryKey: ["boletins", "ciclo", ciclo],
+    queryFn: async () => {
+      const { data: rows, error } = await supabase.from("boletins").select("*")
+        .gte("data", ciclo).lte("data", somarDias(ciclo, 1)).order("data").order("horario");
+      if (error) throw error;
+      return (rows as unknown as Boletim[]).filter((b) => pertenceAoCiclo(b, ciclo));
     },
   });
 
