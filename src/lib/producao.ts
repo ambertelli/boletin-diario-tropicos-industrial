@@ -89,4 +89,6 @@ export function hojeISO() {
   return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
 }
 export const fmt = (n: number) => n.toLocaleString("pt-BR");
+/** Saldo: quando a produção passa do programado, mostra o excedente como "+ N". */
+export const fmtSaldo = (saldo: number) => (saldo < 0 ? `+ ${fmt(-saldo)}` : fmt(saldo));
 export const dataBR = (iso: string) => iso.split("-").reverse().join("/");

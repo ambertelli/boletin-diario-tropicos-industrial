@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { hojeISO, dataBR, calcularSaldos, fmt, somarDias } from "@/lib/producao";
+import { hojeISO, dataBR, calcularSaldos, fmt, fmtSaldo, somarDias } from "@/lib/producao";
 import { boletinsCicloQuery, espelhoQuery } from "@/lib/dados";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -66,7 +66,7 @@ function ProgramacaoProducao() {
                 <td className="px-2 py-1.5">{meta.get(i.id)?.prioridade}</td>
                 <td className="px-2 font-medium">{i.marca}</td>
                 <td className="px-2 text-right">{fmt(i.quantidade)}</td><td className="px-2 text-right">{fmt(i.produzido)}</td>
-                <td className={`px-2 text-right font-semibold ${i.saldo <= 0 ? "text-success" : "text-primary"}`}>{fmt(i.saldo)}</td>
+                <td className={`px-2 text-right font-semibold ${i.saldo <= 0 ? "text-success" : "text-primary"}`}>{fmtSaldo(i.saldo)}</td>
                 <td className="px-2"><Progress value={i.quantidade ? Math.min(100, (i.produzido / i.quantidade) * 100) : 0} /></td>
               </tr>))}</tbody>
           </table></div>
