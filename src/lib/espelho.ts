@@ -35,3 +35,16 @@ export function ordenarPorPrioridade<T extends ItemProgramacao>(itens: T[]): T[]
     .sort((a, b) => (a.i.prioridadeFabricacao ?? Infinity) - (b.i.prioridadeFabricacao ?? Infinity) || a.k - b.k)
     .map((x) => x.i);
 }
+
+export type Observacao = { marca: string; obs: string };
+
+/** Lê o quadro "Programação anterior e observações" (lista ou texto JSON) vindo do app Programação Diária. */
+export function lerObservacoes(raw: unknown): Observacao[] {
+  let v = raw;
+  if (typeof v === "string") {
+    if (!v.trim()) return [];
+    try { v = JSON.parse(v); } catch { return [{ marca: "", obs: v as string }]; }
+  }
+  if (!Array.isArray(v)) return [];
+  return v.map((r) => ({ marca: String(r?.marca ?? ""), obs: String(r?.obs ?? "") })).filter((r) => r.marca || r.obs);
+}

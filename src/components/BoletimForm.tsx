@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { boletinsCicloQuery, boletinsDiaQuery, boletinsMesQuery, cadastrosQuery, programacaoQuery, type Boletim } from "@/lib/dados";
+import { boletinsCicloQuery, boletinsDiaQuery, boletinsMesQuery, cadastrosQuery, espelhoQuery, programacaoQuery, type Boletim } from "@/lib/dados";
 import { enfileirar, erroDeRede } from "@/lib/fila";
 import {
   HORARIOS, SECOES, dataBR, dataCiclo, SEGUNDA_METRAGENS, SEGUNDA_PRODUTOS, TURMAS, calcularSaldos, chave, fmt, totalBoletim,
@@ -42,6 +42,7 @@ export function BoletimForm({ inicial, id }: { inicial: Form; id?: string }) {
   const cic = useQuery(boletinsCicloQuery(ciclo));
   const mes = useQuery(boletinsMesQuery(f.data));
   const cad = useQuery(cadastrosQuery);
+  const esp = useQuery(espelhoQuery(ciclo));
 
   const outrosDia = (dia.data ?? []).filter((b) => b.id !== id);
   const linhasValidas = f.producao.filter((l) => l.marca || l.formato || l.quantidade);
@@ -49,6 +50,7 @@ export function BoletimForm({ inicial, id }: { inicial: Form; id?: string }) {
   const acumDia = outrosDia.reduce((a, b) => a + totalBoletim(b.producao), 0) + total;
   const acumMes = (mes.data ?? []).filter((b) => b.id !== id && b.data <= f.data).reduce((a, b) => a + totalBoletim(b.producao), 0) + total;
   const outrosCiclo = (cic.data ?? []).filter((b) => b.id !== id);
+  const acumCiclo = outrosCiclo.reduce((a, b) => a + totalBoletim(b.producao), 0) + total;
   const todasLinhas = [...outrosCiclo.flatMap((b) => b.producao), ...linhasValidas].filter((l) => l.secao !== "segunda");
   const { itens } = calcularSaldos(prog.data ?? [], todasLinhas);
   const saldoDe = (l: LinhaProducao) => itens.find((i) => chave(i.marca, i.formato, i.metros) === chave(l.marca, l.formato, l.metros));
@@ -179,18 +181,18 @@ export function BoletimForm({ inicial, id }: { inicial: Form; id?: string }) {
           <datalist id="bl-lideres">{opts("lider")}</datalist>
         </div>
 
-        <div className="grid grid-cols-3 border-t border-b text-center">
-          {[["TOTAL", total], ["Acumulado/dia", acumDia], ["Acumulado mês", acumMes]].map(([l, v], i) => (
+        <div className="grid grid-cols-2 sm:grid-cols-4 border-t border-b text-center">
+          {[["TOTAL", total], ["Acumulado/dia", acumDia], ["Acumulado ciclo 12h–12h", acumCiclo], ["Acumulado mês", acumMes]].map(([l, v], i) => (
             <div key={l as string} className="border-r last:border-r-0">
               <div className="bg-sheet-head py-1 text-sm font-bold">{l}</div>
-              <div className={`py-1.5 text-lg font-bold ${i === 2 ? "text-destructive" : ""}`}>{fmt(v as number)}</div>
+              <div className={`py-1.5 text-lg font-bold ${i === 3 ? "text-destructive" : ""}`}>{fmt(v as number)}</div>
             </div>
           ))}
         </div>
 
         <section className="no-print">
           <div className="sheet-title">Saldo da programação de {dataBR(ciclo)} (com este boletim)</div>
-          <SaldoTabela programacao={prog.data ?? []} linhas={todasLinhas} />
+          <SaldoTabela programacao={prog.data ?? []} linhas={todasLinhas} observacoes={esp.data?.observacoes ?? []} />
         </section>
 
         <div className="sheet-title border-t">Controle de Produção Diária</div>

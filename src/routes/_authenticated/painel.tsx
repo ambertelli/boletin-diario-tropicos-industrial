@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { boletinsCicloQuery, boletinsDiaQuery, boletinsMesQuery, programacaoQuery } from "@/lib/dados";
+import { boletinsCicloQuery, boletinsDiaQuery, boletinsMesQuery, espelhoQuery, programacaoQuery } from "@/lib/dados";
 import { HORARIOS, dataBR, dataCiclo, fmt, hojeISO, somarDias, totalBoletim } from "@/lib/producao";
 import { SaldoTabela } from "@/components/SaldoTabela";
 import { Input } from "@/components/ui/input";
@@ -22,12 +22,14 @@ function Painel() {
   const setData = (d: string) => { setDataState(d); setCiclo(cicloInicial(d)); };
   const ontem = somarDias(data, -1);
   const prog = useQuery(programacaoQuery(ciclo));
+  const esp = useQuery(espelhoQuery(ciclo));
   const dia = useQuery(boletinsDiaQuery(data));
   const cic = useQuery(boletinsCicloQuery(ciclo));
   const mes = useQuery(boletinsMesQuery(data));
   const linhasDia = (dia.data ?? []).flatMap((b) => b.producao);
   const totalDia = totalBoletim(linhasDia);
   const totalMes = (mes.data ?? []).filter((b) => b.data <= data).reduce((a, b) => a + totalBoletim(b.producao), 0);
+  const totalCiclo = (cic.data ?? []).reduce((a, b) => a + totalBoletim(b.producao), 0);
   const linhasCiclo = (cic.data ?? []).flatMap((b) => b.producao).filter((l) => l.secao !== "segunda");
 
   return (
@@ -40,8 +42,9 @@ function Painel() {
         <Input type="date" className="w-44" value={data} onChange={(e) => setData(e.target.value)} />
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="grid gap-3 sm:grid-cols-3">
         <Kpi label="Acumulado do dia" valor={fmt(totalDia)} />
+        <Kpi label={`Acumulado do ciclo ${dataBR(ciclo).slice(0, 5)} (12h às 12h)`} valor={fmt(totalCiclo)} />
         <Kpi label="Acumulado do mês" valor={fmt(totalMes)} destaque />
       </div>
 
@@ -83,7 +86,7 @@ function Painel() {
             </Button>
           ))}
         </div>
-        <SaldoTabela programacao={prog.data ?? []} linhas={linhasCiclo} />
+        <SaldoTabela programacao={prog.data ?? []} linhas={linhasCiclo} observacoes={esp.data?.observacoes ?? []} />
         <div className="border-t p-2 text-right">
           <Link to="/programacao-producao" search={{ data: ciclo }} className="text-sm underline">Ver programação</Link>
         </div>

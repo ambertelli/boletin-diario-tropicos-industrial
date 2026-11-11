@@ -1,6 +1,6 @@
 import { calcularSaldos, fmt, fmtSaldo, type ItemProgramacao, type LinhaProducao, type Saldo } from "@/lib/producao";
 import { Progress } from "@/components/ui/progress";
-import { ordenarPorPrioridade } from "@/lib/espelho";
+import { ordenarPorPrioridade, type Observacao } from "@/lib/espelho";
 
 type ItemComLinha = ItemProgramacao & { embaladeira?: number };
 
@@ -10,7 +10,7 @@ const BLOCOS = [
   { titulo: "Outros itens programados", ok: (e: number) => !(e >= 1 && e <= 8) },
 ];
 
-export function SaldoTabela({ programacao, linhas }: { programacao: ItemComLinha[]; linhas: LinhaProducao[] }) {
+export function SaldoTabela({ programacao, linhas, observacoes = [] }: { programacao: ItemComLinha[]; linhas: LinhaProducao[]; observacoes?: Observacao[] }) {
   const validos = programacao.filter((p) => p.marca);
   const r = calcularSaldos(validos, linhas);
   const linhaDe = new Map(validos.map((p) => [p.id, Number(p.embaladeira) || 0]));
@@ -45,7 +45,20 @@ export function SaldoTabela({ programacao, linhas }: { programacao: ItemComLinha
           <th className="sheet-th text-right">Saldo</th><th className="sheet-th w-40">Progresso</th>
         </tr>
       </thead>
-      {BLOCOS.map((b) => bloco(b.titulo, itens.filter((i) => b.ok(linhaDe.get(i.id) ?? 0))))}
+      {bloco(BLOCOS[0]!.titulo, itens.filter((i) => BLOCOS[0]!.ok(linhaDe.get(i.id) ?? 0)))}
+      <tbody>
+        <tr><td colSpan={6} className="sheet-th bg-muted text-center font-bold uppercase">Programação anterior e observações</td></tr>
+        <tr className="border-t text-left"><td className="px-2 py-1 font-semibold" colSpan={2}>Marca / formato</td><td className="px-2 py-1 font-semibold" colSpan={4}>Observação</td></tr>
+        {observacoes.length === 0
+          ? <tr className="border-t"><td colSpan={6} className="px-2 py-1.5 text-muted-foreground">Nenhuma observação.</td></tr>
+          : observacoes.map((o, k) => (
+            <tr key={"o" + k} className="border-t">
+              <td className="px-2 py-1.5 font-medium" colSpan={2}>{o.marca || "—"}</td>
+              <td className="px-2 py-1.5" colSpan={4}>{o.obs}</td>
+            </tr>
+          ))}
+      </tbody>
+      {BLOCOS.slice(1).map((b) => bloco(b.titulo, itens.filter((i) => b.ok(linhaDe.get(i.id) ?? 0))))}
       {fora.length > 0 && (
         <tbody>
           <tr><td colSpan={6} className="sheet-th bg-muted text-center font-bold uppercase">Fora da programação</td></tr>

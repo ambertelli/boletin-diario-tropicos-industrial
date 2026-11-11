@@ -79,3 +79,10 @@ describe("ciclo de produção 12h às 12h", () => {
     expect(pertenceAoCiclo({ data: "2026-11-09", horario: "00:00 as 06:00" }, "2026-11-09")).toBe(false);
   });
 });
+
+import { lerObservacoes } from "./espelho";
+describe("observações da programação anterior", () => {
+  it("lê lista em texto e ignora linhas vazias", () => {
+    expect(lerObservacoes('[{"marca":"FOFOPEL 16/4","obs":"faltou 20"},{"marca":"","obs":""}]')).toEqual([{ marca: "FOFOPEL 16/4", obs: "faltou 20" }]);
+  });
+});
