@@ -1,3 +1,4 @@
+import { AlertTriangle } from "lucide-react";
 import { calcularSaldos, fmt, fmtSaldo, type ItemProgramacao, type LinhaProducao, type Saldo } from "@/lib/producao";
 import { Progress } from "@/components/ui/progress";
 import { ordenarPorPrioridade, type Observacao } from "@/lib/espelho";
@@ -32,7 +33,7 @@ export function SaldoTabela({ programacao, linhas, observacoes = [] }: { program
           <td className="px-2 py-1.5 text-center font-semibold">{i.prioridadeFabricacao ?? "—"}</td>
           <td className="px-2 py-1.5 font-medium">{i.marca}</td>
           <td className="px-2 py-1.5">{obsDe.get(norm(i.marca))?.length
-            ? <span className="inline-block rounded-md border-2 border-warning-foreground/30 bg-warning px-2 py-0.5 font-bold uppercase text-warning-foreground">⚠️ {obsDe.get(norm(i.marca))!.join(" · ")}</span>
+            ? <span className="inline-block rounded-md border-2 border-warning-foreground/30 bg-warning px-2 py-0.5 font-bold uppercase text-warning-foreground"><AlertTriangle className="mr-1 inline h-4 w-4 align-[-2px] text-destructive" />{obsDe.get(norm(i.marca))!.join(" · ")}</span>
             : <span className="text-muted-foreground">—</span>}</td>
           <td className="px-2 text-right">{fmt(i.quantidade)}</td>
           <td className="px-2 text-right">{fmt(i.produzido)}</td>
@@ -56,7 +57,7 @@ export function SaldoTabela({ programacao, linhas, observacoes = [] }: { program
       </thead>
       {bloco(BLOCOS[0]!.titulo, itens.filter((i) => BLOCOS[0]!.ok(linhaDe.get(i.id) ?? 0)))}
       <tbody>
-        <tr><td colSpan={7} className={`sheet-th text-center font-bold uppercase ${obsAvulsas.length ? "bg-warning text-warning-foreground" : "bg-muted"}`}>{obsAvulsas.length ? "⚠️ Atenção — " : ""}Programação anterior e observações</td></tr>
+        <tr><td colSpan={7} className={`sheet-th text-center font-bold uppercase ${obsAvulsas.length ? "bg-warning text-warning-foreground" : "bg-muted"}`}>{obsAvulsas.length ? <><AlertTriangle className="mr-1 inline h-4 w-4 align-[-2px] text-destructive" />Atenção — </> : ""}Programação anterior e observações</td></tr>
         <tr className="border-t text-left"><td className="px-2 py-1 font-semibold" colSpan={2}>Marca / formato</td><td className="px-2 py-1 font-semibold" colSpan={5}>Observação</td></tr>
         {obsAvulsas.length === 0
           ? <tr className="border-t"><td colSpan={7} className="px-2 py-1.5 text-muted-foreground">Nenhuma observação.</td></tr>
