@@ -22,6 +22,8 @@ export function SaldoTabela({ programacao, linhas, observacoes = [] }: { program
   const norm = (t: string) => t.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().replace(/\s+/g, " ").trim();
   const obsDe = new Map<string, string[]>();
   for (const o of observacoes) if (o.marca && o.obs) obsDe.set(norm(o.marca), [...(obsDe.get(norm(o.marca)) ?? []), o.obs]);
+  const programadas = new Set(itens.map((i) => norm(i.marca)));
+  const obsAvulsas = observacoes.filter((o) => !o.marca || !programadas.has(norm(o.marca)));
   const bloco = (titulo: string, lista: Saldo[]) => lista.length > 0 && (
     <tbody key={titulo}>
       <tr><td colSpan={7} className="sheet-th bg-muted text-center font-bold uppercase">{titulo}</td></tr>
@@ -54,9 +56,9 @@ export function SaldoTabela({ programacao, linhas, observacoes = [] }: { program
       <tbody>
         <tr><td colSpan={7} className="sheet-th bg-muted text-center font-bold uppercase">Programação anterior e observações</td></tr>
         <tr className="border-t text-left"><td className="px-2 py-1 font-semibold" colSpan={2}>Marca / formato</td><td className="px-2 py-1 font-semibold" colSpan={5}>Observação</td></tr>
-        {observacoes.length === 0
+        {obsAvulsas.length === 0
           ? <tr className="border-t"><td colSpan={7} className="px-2 py-1.5 text-muted-foreground">Nenhuma observação.</td></tr>
-          : observacoes.map((o, k) => (
+          : obsAvulsas.map((o, k) => (
             <tr key={"o" + k} className="border-t">
               <td className="px-2 py-1.5 font-medium" colSpan={2}>{o.marca || "—"}</td>
               <td className="px-2 py-1.5" colSpan={5}>{o.obs}</td>
