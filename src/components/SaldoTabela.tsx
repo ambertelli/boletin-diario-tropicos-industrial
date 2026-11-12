@@ -31,7 +31,9 @@ export function SaldoTabela({ programacao, linhas, observacoes = [] }: { program
         <tr key={i.id} className="border-t">
           <td className="px-2 py-1.5 text-center font-semibold">{i.prioridadeFabricacao ?? "—"}</td>
           <td className="px-2 py-1.5 font-medium">{i.marca}</td>
-          <td className="px-2 py-1.5 font-semibold text-primary">{obsDe.get(norm(i.marca))?.join(" · ") || "—"}</td>
+          <td className="px-2 py-1.5">{obsDe.get(norm(i.marca))?.length
+            ? <span className="inline-block rounded-md border-2 border-warning-foreground/30 bg-warning px-2 py-0.5 font-bold uppercase text-warning-foreground">⚠️ {obsDe.get(norm(i.marca))!.join(" · ")}</span>
+            : <span className="text-muted-foreground">—</span>}</td>
           <td className="px-2 text-right">{fmt(i.quantidade)}</td>
           <td className="px-2 text-right">{fmt(i.produzido)}</td>
           <td className={`px-2 text-right font-semibold ${i.saldo <= 0 ? "text-success" : "text-primary"}`}>{fmtSaldo(i.saldo)}</td>
@@ -54,13 +56,13 @@ export function SaldoTabela({ programacao, linhas, observacoes = [] }: { program
       </thead>
       {bloco(BLOCOS[0]!.titulo, itens.filter((i) => BLOCOS[0]!.ok(linhaDe.get(i.id) ?? 0)))}
       <tbody>
-        <tr><td colSpan={7} className="sheet-th bg-muted text-center font-bold uppercase">Programação anterior e observações</td></tr>
+        <tr><td colSpan={7} className={`sheet-th text-center font-bold uppercase ${obsAvulsas.length ? "bg-warning text-warning-foreground" : "bg-muted"}`}>{obsAvulsas.length ? "⚠️ Atenção — " : ""}Programação anterior e observações</td></tr>
         <tr className="border-t text-left"><td className="px-2 py-1 font-semibold" colSpan={2}>Marca / formato</td><td className="px-2 py-1 font-semibold" colSpan={5}>Observação</td></tr>
         {obsAvulsas.length === 0
           ? <tr className="border-t"><td colSpan={7} className="px-2 py-1.5 text-muted-foreground">Nenhuma observação.</td></tr>
           : obsAvulsas.map((o, k) => (
-            <tr key={"o" + k} className="border-t">
-              <td className="px-2 py-1.5 font-medium" colSpan={2}>{o.marca || "—"}</td>
+            <tr key={"o" + k} className="border-t bg-warning/25 font-bold">
+              <td className="px-2 py-1.5" colSpan={2}>{o.marca || "—"}</td>
               <td className="px-2 py-1.5" colSpan={5}>{o.obs}</td>
             </tr>
           ))}
