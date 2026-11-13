@@ -13,12 +13,14 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedCadastrosRouteImport } from './routes/_authenticated/cadastros'
+import { Route as AuthenticatedFuncionariosRouteImport } from './routes/_authenticated/funcionarios'
 import { Route as AuthenticatedHistoricoRouteImport } from './routes/_authenticated/historico'
 import { Route as AuthenticatedPainelRouteImport } from './routes/_authenticated/painel'
 import { Route as AuthenticatedProgramacaoRouteImport } from './routes/_authenticated/programacao'
 import { Route as AuthenticatedProgramacaoProducaoRouteImport } from './routes/_authenticated/programacao-producao'
 import { Route as AuthenticatedBoletimIdRouteImport } from './routes/_authenticated/boletim.$id'
 import { Route as AuthenticatedBoletimNovoRouteImport } from './routes/_authenticated/boletim.novo'
+import { Route as AuthenticatedFuncionarioIdRouteImport } from './routes/_authenticated/funcionario.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -39,6 +41,12 @@ const AuthenticatedCadastrosRoute = AuthenticatedCadastrosRouteImport.update({
   path: '/cadastros',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedFuncionariosRoute =
+  AuthenticatedFuncionariosRouteImport.update({
+    id: '/funcionarios',
+    path: '/funcionarios',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedHistoricoRoute = AuthenticatedHistoricoRouteImport.update({
   id: '/historico',
   path: '/historico',
@@ -72,28 +80,38 @@ const AuthenticatedBoletimNovoRoute =
     path: '/boletim/novo',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedFuncionarioIdRoute =
+  AuthenticatedFuncionarioIdRouteImport.update({
+    id: '/funcionario/$id',
+    path: '/funcionario/$id',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/cadastros': typeof AuthenticatedCadastrosRoute
+  '/funcionarios': typeof AuthenticatedFuncionariosRoute
   '/historico': typeof AuthenticatedHistoricoRoute
   '/painel': typeof AuthenticatedPainelRoute
   '/programacao': typeof AuthenticatedProgramacaoRoute
   '/programacao-producao': typeof AuthenticatedProgramacaoProducaoRoute
   '/boletim/$id': typeof AuthenticatedBoletimIdRoute
   '/boletim/novo': typeof AuthenticatedBoletimNovoRoute
+  '/funcionario/$id': typeof AuthenticatedFuncionarioIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/cadastros': typeof AuthenticatedCadastrosRoute
+  '/funcionarios': typeof AuthenticatedFuncionariosRoute
   '/historico': typeof AuthenticatedHistoricoRoute
   '/painel': typeof AuthenticatedPainelRoute
   '/programacao': typeof AuthenticatedProgramacaoRoute
   '/programacao-producao': typeof AuthenticatedProgramacaoProducaoRoute
   '/boletim/$id': typeof AuthenticatedBoletimIdRoute
   '/boletim/novo': typeof AuthenticatedBoletimNovoRoute
+  '/funcionario/$id': typeof AuthenticatedFuncionarioIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -101,12 +119,14 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/_authenticated/cadastros': typeof AuthenticatedCadastrosRoute
+  '/_authenticated/funcionarios': typeof AuthenticatedFuncionariosRoute
   '/_authenticated/historico': typeof AuthenticatedHistoricoRoute
   '/_authenticated/painel': typeof AuthenticatedPainelRoute
   '/_authenticated/programacao': typeof AuthenticatedProgramacaoRoute
   '/_authenticated/programacao-producao': typeof AuthenticatedProgramacaoProducaoRoute
   '/_authenticated/boletim/$id': typeof AuthenticatedBoletimIdRoute
   '/_authenticated/boletim/novo': typeof AuthenticatedBoletimNovoRoute
+  '/_authenticated/funcionario/$id': typeof AuthenticatedFuncionarioIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -114,35 +134,41 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/cadastros'
+    | '/funcionarios'
     | '/historico'
     | '/painel'
     | '/programacao'
     | '/programacao-producao'
     | '/boletim/$id'
     | '/boletim/novo'
+    | '/funcionario/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/auth'
     | '/cadastros'
+    | '/funcionarios'
     | '/historico'
     | '/painel'
     | '/programacao'
     | '/programacao-producao'
     | '/boletim/$id'
     | '/boletim/novo'
+    | '/funcionario/$id'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/auth'
     | '/_authenticated/cadastros'
+    | '/_authenticated/funcionarios'
     | '/_authenticated/historico'
     | '/_authenticated/painel'
     | '/_authenticated/programacao'
     | '/_authenticated/programacao-producao'
     | '/_authenticated/boletim/$id'
     | '/_authenticated/boletim/novo'
+    | '/_authenticated/funcionario/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -179,6 +205,13 @@ declare module '@tanstack/react-router' {
       path: '/cadastros'
       fullPath: '/cadastros'
       preLoaderRoute: typeof AuthenticatedCadastrosRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/funcionarios': {
+      id: '/_authenticated/funcionarios'
+      path: '/funcionarios'
+      fullPath: '/funcionarios'
+      preLoaderRoute: typeof AuthenticatedFuncionariosRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/historico': {
@@ -223,27 +256,38 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedBoletimNovoRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/funcionario/$id': {
+      id: '/_authenticated/funcionario/$id'
+      path: '/funcionario/$id'
+      fullPath: '/funcionario/$id'
+      preLoaderRoute: typeof AuthenticatedFuncionarioIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedCadastrosRoute: typeof AuthenticatedCadastrosRoute
+  AuthenticatedFuncionariosRoute: typeof AuthenticatedFuncionariosRoute
   AuthenticatedHistoricoRoute: typeof AuthenticatedHistoricoRoute
   AuthenticatedPainelRoute: typeof AuthenticatedPainelRoute
   AuthenticatedProgramacaoRoute: typeof AuthenticatedProgramacaoRoute
   AuthenticatedProgramacaoProducaoRoute: typeof AuthenticatedProgramacaoProducaoRoute
   AuthenticatedBoletimIdRoute: typeof AuthenticatedBoletimIdRoute
   AuthenticatedBoletimNovoRoute: typeof AuthenticatedBoletimNovoRoute
+  AuthenticatedFuncionarioIdRoute: typeof AuthenticatedFuncionarioIdRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCadastrosRoute: AuthenticatedCadastrosRoute,
+  AuthenticatedFuncionariosRoute: AuthenticatedFuncionariosRoute,
   AuthenticatedHistoricoRoute: AuthenticatedHistoricoRoute,
   AuthenticatedPainelRoute: AuthenticatedPainelRoute,
   AuthenticatedProgramacaoRoute: AuthenticatedProgramacaoRoute,
   AuthenticatedProgramacaoProducaoRoute: AuthenticatedProgramacaoProducaoRoute,
   AuthenticatedBoletimIdRoute: AuthenticatedBoletimIdRoute,
   AuthenticatedBoletimNovoRoute: AuthenticatedBoletimNovoRoute,
+  AuthenticatedFuncionarioIdRoute: AuthenticatedFuncionarioIdRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =

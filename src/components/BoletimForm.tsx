@@ -10,6 +10,7 @@ import {
   HORARIOS, SECOES, dataBR, dataCiclo, SEGUNDA_METRAGENS, SEGUNDA_PRODUTOS, TURMAS, calcularSaldos, chave, fmt, totalBoletim,
   type Acidente, type LinhaProducao, type Ocorrencia, type Parada, type Secao,
 } from "@/lib/producao";
+import { funcionariosQuery } from "@/routes/_authenticated/funcionarios";
 import { SaldoTabela } from "@/components/SaldoTabela";
 import { Button } from "@/components/ui/button";
 
@@ -71,6 +72,8 @@ export function BoletimForm({ inicial, id }: { inicial: Form; id?: string }) {
     arr.splice(last + 1, 0, { secao, marca: "", formato: "", metros: "", quantidade: 0 });
     return { ...p, producao: arr };
   });
+  const funcs = useQuery(funcionariosQuery).data ?? [];
+  const funcsOrdem = [...funcs].sort((a, b) => Number(b.turma === f.turma) - Number(a.turma === f.turma) || a.nome.localeCompare(b.nome));
   const setArr = <K extends "paradas" | "ocorrencias">(k: K, i: number, campo: string, v: string) =>
     setF((p) => ({ ...p, [k]: (p[k] as Record<string, string>[]).map((x, j) => (j === i ? { ...x, [campo]: v } : x)) }));
   const setAc = (k: keyof Acidente, v: string) => setF((p) => ({ ...p, acidente: { ...p.acidente, [k]: v } }));
@@ -234,12 +237,14 @@ export function BoletimForm({ inicial, id }: { inicial: Form; id?: string }) {
             {f.ocorrencias.map((o, i) => (
               <tr key={i} className="border-t">
                 {(["data", "nome", "turno", "ocorrencia"] as (keyof Ocorrencia)[]).map((k) => (
-                  <td key={k} className="border-r last:border-r-0"><input className="sheet-cell" value={o[k]} onChange={(e) => setArr("ocorrencias", i, k, e.target.value)} /></td>
+                  <td key={k} className="border-r last:border-r-0"><input className="sheet-cell" list={k === "nome" ? "lista-funcionarios" : k === "ocorrencia" ? "lista-ocorrencias" : undefined} value={o[k]} onChange={(e) => setArr("ocorrencias", i, k, e.target.value)} /></td>
                 ))}
               </tr>
             ))}
           </tbody>
         </table>
+        <datalist id="lista-funcionarios">{funcsOrdem.map((x) => <option key={x.id} value={x.nome}>{`${x.funcao} – Turma ${x.turma}${x.turma === f.turma ? "" : " (outra turma)"}`}</option>)}</datalist>
+        <datalist id="lista-ocorrencias">{["Falta", "Troca de horário", "Cobertura de turno", "Dobra", "Folga", "Atestado", "Dispensa", "Férias"].map((x) => <option key={x} value={x} />)}</datalist>
         <AddBtn onClick={() => setF({ ...f, ocorrencias: [...f.ocorrencias, { data: "", nome: "", turno: f.turma, ocorrencia: "" }] })} />
 
         <div className="sheet-title border-t">Acidente de trabalho</div>

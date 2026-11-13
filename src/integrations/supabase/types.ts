@@ -80,6 +80,77 @@ export type Database = {
         }
         Relationships: []
       }
+      funcionario_lancamentos: {
+        Row: {
+          boletim_id: string | null
+          created_at: string
+          data: string
+          descricao: string
+          dias: number
+          funcionario_id: string
+          id: string
+          periodo: string
+          tipo: string
+        }
+        Insert: {
+          boletim_id?: string | null
+          created_at?: string
+          data: string
+          descricao?: string
+          dias?: number
+          funcionario_id: string
+          id?: string
+          periodo?: string
+          tipo?: string
+        }
+        Update: {
+          boletim_id?: string | null
+          created_at?: string
+          data?: string
+          descricao?: string
+          dias?: number
+          funcionario_id?: string
+          id?: string
+          periodo?: string
+          tipo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "funcionario_lancamentos_funcionario_id_fkey"
+            columns: ["funcionario_id"]
+            isOneToOne: false
+            referencedRelation: "funcionarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      funcionarios: {
+        Row: {
+          created_at: string
+          funcao: string
+          id: string
+          nome: string
+          turma: string
+          vencimento_ferias: string | null
+        }
+        Insert: {
+          created_at?: string
+          funcao?: string
+          id?: string
+          nome: string
+          turma?: string
+          vencimento_ferias?: string | null
+        }
+        Update: {
+          created_at?: string
+          funcao?: string
+          id?: string
+          nome?: string
+          turma?: string
+          vencimento_ferias?: string | null
+        }
+        Relationships: []
+      }
       programacao_itens: {
         Row: {
           created_at: string

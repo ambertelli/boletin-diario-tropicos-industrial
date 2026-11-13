@@ -29,6 +29,13 @@
       "when": 1793792727661,
       "tag": "0003_cadastros_permitir_segunda",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1794571446606,
+      "tag": "0004_funcionarios_fichas",
+      "breakpoints": true
     }
   ]
 }

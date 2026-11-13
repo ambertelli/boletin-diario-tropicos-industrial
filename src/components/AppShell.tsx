@@ -11,6 +11,7 @@ const links = [
   { to: "/boletim/novo", label: "Novo boletim" },
   { to: "/programacao-producao", label: "Programação de produção" },
   { to: "/historico", label: "Histórico" },
+  { to: "/funcionarios", label: "Funcionários" },
   { to: "/cadastros", label: "Cadastros" },
 ] as const;
 
