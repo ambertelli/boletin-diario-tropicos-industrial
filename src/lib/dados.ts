@@ -1,7 +1,8 @@
 import { queryOptions } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { pertenceAoCiclo, somarDias, type Acidente, type ItemProgramacao, type LinhaProducao, type Ocorrencia, type Parada } from "./producao";
-import { buscarProgramacaoEspelho } from "./espelho.functions";
+import { somarDias, type Acidente, type ItemProgramacao, type LinhaProducao, type Ocorrencia, type Parada } from "./producao";
+import { buscarProgramacaoEspelho, buscarVigencia } from "./espelho.functions";
+import { dataCiclo } from "./producao";
 
 export type Boletim = {
   id: string;
@@ -47,15 +48,30 @@ export const boletinsDiaQuery = (data: string) =>
     },
   });
 
-/** Boletins do ciclo de produção da programação `ciclo` (12h do dia até 12h do dia seguinte). */
+/** Vigência (12h do início até 12h do fim) da programação que contém o dia `ciclo`. */
+export const vigenciaQuery = (ciclo: string) =>
+  queryOptions({
+    queryKey: ["vigencia", ciclo],
+    queryFn: async () => {
+      try { return await buscarVigencia({ data: { data: ciclo } }); }
+      catch { return { inicio: ciclo, fim: somarDias(ciclo, 1) }; }
+    },
+    staleTime: 5 * 60_000,
+  });
+
+/** Boletins de toda a vigência da programação (24h, 48h, 96h...), sempre de 12h a 12h. */
 export const boletinsCicloQuery = (ciclo: string) =>
   queryOptions({
     queryKey: ["boletins", "ciclo", ciclo],
     queryFn: async () => {
+      const v = await vigenciaQuery(ciclo).queryFn!({} as never);
       const { data: rows, error } = await supabase.from("boletins").select("*")
-        .gte("data", ciclo).lte("data", somarDias(ciclo, 1)).order("data").order("horario");
+        .gte("data", v.inicio).lte("data", v.fim).order("data").order("horario");
       if (error) throw error;
-      return (rows as unknown as Boletim[]).filter((b) => pertenceAoCiclo(b, ciclo));
+      return (rows as unknown as Boletim[]).filter((b) => {
+        const c = dataCiclo(b.data, b.horario);
+        return c >= v.inicio && c < v.fim;
+      });
     },
   });
 

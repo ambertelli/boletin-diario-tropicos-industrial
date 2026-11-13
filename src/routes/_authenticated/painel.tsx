@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { boletinsCicloQuery, boletinsDiaQuery, boletinsMesQuery, espelhoQuery, programacaoQuery } from "@/lib/dados";
+import { boletinsCicloQuery, boletinsDiaQuery, boletinsMesQuery, espelhoQuery, vigenciaQuery, programacaoQuery } from "@/lib/dados";
 import { HORARIOS, dataBR, dataCiclo, fmt, hojeISO, somarDias, totalBoletim } from "@/lib/producao";
 import { SaldoTabela } from "@/components/SaldoTabela";
 import { Input } from "@/components/ui/input";
@@ -26,6 +26,8 @@ function Painel() {
   const dia = useQuery(boletinsDiaQuery(data));
   const cic = useQuery(boletinsCicloQuery(ciclo));
   const mes = useQuery(boletinsMesQuery(data));
+  const vig = useQuery(vigenciaQuery(ciclo)).data;
+  const periodo = vig && somarDias(vig.inicio, 1) !== vig.fim ? `${dataBR(vig.inicio).slice(0, 5)} a ${dataBR(vig.fim)}` : dataBR(ciclo);
   const linhasDia = (dia.data ?? []).flatMap((b) => b.producao);
   const totalDia = totalBoletim(linhasDia);
   const totalMes = (mes.data ?? []).filter((b) => b.data <= data).reduce((a, b) => a + totalBoletim(b.producao), 0);
@@ -78,7 +80,7 @@ function Painel() {
       </section>
 
       <section className="overflow-hidden rounded-md border bg-card">
-        <div className="sheet-title">Programação de {dataBR(ciclo)} × Produção</div>
+        <div className="sheet-title">Programação de {periodo} × Produção</div>
         <div className="flex flex-wrap gap-2 border-b p-2">
           {[ontem, data].map((c) => (
             <Button key={c} size="sm" variant={c === ciclo ? "default" : "outline"} onClick={() => setCiclo(c)}>
