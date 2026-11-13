@@ -57,12 +57,12 @@ export function SaldoTabela({ programacao, linhas, observacoes = [] }: { program
       </thead>
       {bloco(BLOCOS[0]!.titulo, itens.filter((i) => BLOCOS[0]!.ok(linhaDe.get(i.id) ?? 0)))}
       <tbody>
-        <tr><td colSpan={7} className={`sheet-th text-center font-bold uppercase ${obsAvulsas.length ? "bg-warning text-warning-foreground" : "bg-muted"}`}>{obsAvulsas.length ? <><AlertTriangle className="mr-1 inline h-4 w-4 align-[-2px] text-destructive" />Atenção — </> : ""}Programação anterior e observações</td></tr>
+        <tr><td colSpan={7} className={`sheet-th text-center font-bold uppercase ${obsAvulsas.length ? "animate-pulse bg-destructive text-base text-destructive-foreground" : "bg-muted"}`}>{obsAvulsas.length ? <><AlertTriangle className="mr-1 inline h-5 w-5 align-[-3px]" />Atenção urgente — </> : ""}Programação anterior e observações</td></tr>
         <tr className="border-t text-left"><td className="px-2 py-1 font-semibold" colSpan={2}>Marca / formato</td><td className="px-2 py-1 font-semibold" colSpan={5}>Observação</td></tr>
         {obsAvulsas.length === 0
           ? <tr className="border-t"><td colSpan={7} className="px-2 py-1.5 text-muted-foreground">Nenhuma observação.</td></tr>
           : obsAvulsas.map((o, k) => (
-            <tr key={"o" + k} className="border-t bg-warning/25 font-bold">
+            <tr key={"o" + k} className="border-2 border-destructive bg-destructive/10 font-bold text-destructive">
               <td className="px-2 py-1.5" colSpan={2}>{o.marca || "—"}</td>
               <td className="px-2 py-1.5" colSpan={5}>{o.obs}</td>
             </tr>
