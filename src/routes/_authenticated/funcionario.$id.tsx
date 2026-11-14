@@ -32,14 +32,14 @@ function Ficha() {
   const ult = linhas.at(-1);
 
   async function salvarFunc(campo: string, valor: string) {
-    const { error } = await supabase.from("funcionarios").update({ [campo]: valor || null }).eq("id", id);
+    const { error } = await supabase.from("funcionarios").update({ [campo]: valor || null } as never).eq("id", id);
     if (error) toast.error(error.message); else qc.invalidateQueries({ queryKey: ["funcionario", id] });
   }
   async function add(e: React.FormEvent) {
     e.preventDefault();
-    if (!n.data) return toast.error("Informe a data");
+    if (!n.data) { toast.error("Informe a data"); return; }
     const { error } = await supabase.from("funcionario_lancamentos").insert({ funcionario_id: id, ...n, dias: Number(n.dias) || 0 });
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     setN({ ...n, periodo: "", dias: "", descricao: "" }); refresh();
   }
   async function excluirFunc() {

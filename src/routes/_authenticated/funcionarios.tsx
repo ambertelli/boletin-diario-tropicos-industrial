@@ -30,7 +30,7 @@ function Funcionarios() {
     e.preventDefault();
     if (!n.nome.trim()) return;
     const { error } = await supabase.from("funcionarios").insert({ ...n, nome: n.nome.trim(), vencimento_ferias: n.vencimento_ferias || null });
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     setN({ ...n, nome: "", funcao: "" });
     qc.invalidateQueries({ queryKey: ["funcionarios"] });
   }
