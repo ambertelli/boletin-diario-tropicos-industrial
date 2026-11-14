@@ -1,3 +1,3 @@
 - [x] Corrigir datas e identificação dos funcionários nas ocorrências.
 - [x] Contabilizar um dia quando uma falta não informa quantidade.
-- [ ] Verificar lançamento do boletim e leitura da falta na ficha.
+- [x] Verificar lançamento do boletim e leitura da falta na ficha.
