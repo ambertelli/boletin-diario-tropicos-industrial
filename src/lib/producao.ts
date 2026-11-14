@@ -22,7 +22,7 @@ export const SEGUNDA_METRAGENS = ["20M", "30M", "60M", "150M", "200M", "300M"];
 
 export type LinhaProducao = { secao: Secao; marca: string; formato: string; metros: string; quantidade: number };
 export type Parada = { maquina: string; numero: string; inicio: string; fim: string; descricao: string };
-export type Ocorrencia = { data: string; nome: string; turno: string; ocorrencia: string };
+export type Ocorrencia = { data: string; nome: string; turno: string; ocorrencia: string; funcionario_id?: string };
 export type Acidente = Partial<Record<"nome" | "funcao" | "local" | "parte" | "agente" | "testemunha" | "providencias" | "descricao", string>>;
 
 export type ItemProgramacao = { id: string; marca: string; formato: string; metros: string; quantidade: number; prioridadeFabricacao?: number | null };

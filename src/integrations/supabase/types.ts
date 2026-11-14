@@ -207,6 +207,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      data_ocorrencia: {
+        Args: { padrao: string; valor: string }
+        Returns: string
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -215,6 +219,7 @@ export type Database = {
         Returns: boolean
       }
       is_lider: { Args: { _user_id: string }; Returns: boolean }
+      normalizar_nome_funcionario: { Args: { valor: string }; Returns: string }
     }
     Enums: {
       app_role: "admin" | "lider"

@@ -13,6 +13,7 @@ import {
 import { funcionariosQuery } from "@/routes/_authenticated/funcionarios";
 import { SaldoTabela } from "@/components/SaldoTabela";
 import { Button } from "@/components/ui/button";
+import { dataOcorrencia, identificarFuncionario } from "@/lib/ocorrencias";
 
 type Form = Omit<Boletim, "id">;
 const LINHAS_POR_SECAO = 3;
@@ -79,12 +80,22 @@ export function BoletimForm({ inicial, id }: { inicial: Form; id?: string }) {
   const setAc = (k: keyof Acidente, v: string) => setF((p) => ({ ...p, acidente: { ...p.acidente, [k]: v } }));
 
   async function salvar() {
+    const ocorrencias: Ocorrencia[] = [];
+    for (const o of f.ocorrencias.filter((x) => x.nome || x.ocorrencia)) {
+      const data = dataOcorrencia(o.data, f.data);
+      if (!data) { toast.error("Data da ocorrência inválida. Use DD/MM/AAAA."); return; }
+      const funcionario = funcs.find((x) => x.id === o.funcionario_id) ?? identificarFuncionario(o.nome, funcs);
+      if (!funcionario && /falta/i.test(o.ocorrencia)) {
+        toast.error("Selecione o funcionário cadastrado para contabilizar a falta na ficha."); return;
+      }
+      ocorrencias.push({ ...o, data, nome: funcionario?.nome ?? o.nome, funcionario_id: funcionario?.id });
+    }
     setBusy(true);
     const payload = {
       data: f.data, turma: f.turma, horario: f.horario, lider: f.lider, observacoes: f.observacoes,
       producao: linhasValidas,
       paradas: f.paradas.filter((x) => Object.values(x).some(Boolean)),
-      ocorrencias: f.ocorrencias.filter((x) => x.nome || x.ocorrencia),
+      ocorrencias,
       acidente: f.acidente,
       updated_at: new Date().toISOString(),
     };
@@ -118,6 +129,7 @@ export function BoletimForm({ inicial, id }: { inicial: Form; id?: string }) {
     toast.success("Boletim salvo — programação atualizada");
     qc.invalidateQueries({ queryKey: ["boletins"] });
     qc.invalidateQueries({ queryKey: ["boletim"] });
+    qc.invalidateQueries({ queryKey: ["lancamentos"] });
     navigate({ to: "/boletim/$id", params: { id: r.data.id } });
   }
 
@@ -237,13 +249,21 @@ export function BoletimForm({ inicial, id }: { inicial: Form; id?: string }) {
             {f.ocorrencias.map((o, i) => (
               <tr key={i} className="border-t">
                 {(["data", "nome", "turno", "ocorrencia"] as (keyof Ocorrencia)[]).map((k) => (
-                  <td key={k} className="border-r last:border-r-0"><input className="sheet-cell" list={k === "nome" ? "lista-funcionarios" : k === "ocorrencia" ? "lista-ocorrencias" : undefined} value={o[k]} onChange={(e) => setArr("ocorrencias", i, k, e.target.value)} /></td>
+                  <td key={k} className="border-r last:border-r-0">{k === "nome" ? (
+                    <select aria-label={`Funcionário da ocorrência ${i + 1}`} className="sheet-cell" value={o.funcionario_id ?? identificarFuncionario(o.nome, funcs)?.id ?? o.nome} onChange={(e) => {
+                      const funcionario = funcs.find((x) => x.id === e.target.value);
+                      setF((p) => ({ ...p, ocorrencias: p.ocorrencias.map((x, j) => j === i ? { ...x, nome: funcionario?.nome ?? "", funcionario_id: funcionario?.id } : x) }));
+                    }}>
+                      <option value="">Selecione</option>
+                      {o.nome && !o.funcionario_id && !identificarFuncionario(o.nome, funcs) && <option value={o.nome}>{o.nome}</option>}
+                      {funcsOrdem.map((x) => <option key={x.id} value={x.id}>{`${x.nome} — ${x.funcao} — Turma ${x.turma}${x.turma === f.turma ? "" : " (outra turma)"}`}</option>)}
+                    </select>
+                  ) : <input aria-label={`${k} da ocorrência ${i + 1}`} className="sheet-cell" list={k === "ocorrencia" ? "lista-ocorrencias" : undefined} value={o[k]} onChange={(e) => setArr("ocorrencias", i, k, e.target.value)} />}</td>
                 ))}
               </tr>
             ))}
           </tbody>
         </table>
-        <datalist id="lista-funcionarios">{funcsOrdem.map((x) => <option key={x.id} value={x.nome}>{`${x.funcao} – Turma ${x.turma}${x.turma === f.turma ? "" : " (outra turma)"}`}</option>)}</datalist>
         <datalist id="lista-ocorrencias">{["Falta", "Troca de horário", "Cobertura de turno", "Dobra", "Folga", "Atestado", "Dispensa", "Férias"].map((x) => <option key={x} value={x} />)}</datalist>
         <AddBtn onClick={() => setF({ ...f, ocorrencias: [...f.ocorrencias, { data: "", nome: "", turno: f.turma, ocorrencia: "" }] })} />
 

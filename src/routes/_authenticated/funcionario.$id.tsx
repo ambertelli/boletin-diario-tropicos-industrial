@@ -4,7 +4,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { TURMAS } from "@/lib/producao";
-import { calcularFicha, TIPOS_LANC, type Lancamento } from "@/lib/ficha";
+import { calcularFicha, diasLancamento, TIPOS_LANC, type Lancamento } from "@/lib/ficha";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
@@ -38,7 +38,7 @@ function Ficha() {
   async function add(e: React.FormEvent) {
     e.preventDefault();
     if (!n.data) { toast.error("Informe a data"); return; }
-    const { error } = await supabase.from("funcionario_lancamentos").insert({ funcionario_id: id, ...n, dias: Number(n.dias) || 0 });
+    const { error } = await supabase.from("funcionario_lancamentos").insert({ funcionario_id: id, ...n, dias: diasLancamento(n.tipo, n.dias) });
     if (error) { toast.error(error.message); return; }
     setN({ ...n, periodo: "", dias: "", descricao: "" }); refresh();
   }
