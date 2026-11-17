@@ -244,7 +244,7 @@ export function BoletimForm({ inicial, id }: { inicial: Form; id?: string }) {
 
         <div className="sheet-title border-t">Ocorrências com Funcionários</div>
         <table className="w-full text-sm">
-          <thead><tr><th className="sheet-th w-32">Data</th><th className="sheet-th">Nome</th><th className="sheet-th w-20">Turno</th><th className="sheet-th">Ocorrência</th></tr></thead>
+          <thead><tr><th className="sheet-th w-32">Data</th><th className="sheet-th">Nome</th><th className="sheet-th w-20">Turno</th><th className="sheet-th">Ocorrência</th><th className="sheet-th w-10"></th></tr></thead>
           <tbody>
             {f.ocorrencias.map((o, i) => (
               <tr key={i} className="border-t">
@@ -260,6 +260,7 @@ export function BoletimForm({ inicial, id }: { inicial: Form; id?: string }) {
                     </select>
                   ) : <input aria-label={`${k} da ocorrência ${i + 1}`} className="sheet-cell" list={k === "ocorrencia" ? "lista-ocorrencias" : undefined} value={o[k]} onChange={(e) => setArr("ocorrencias", i, k, e.target.value)} />}</td>
                 ))}
+                <td className="text-center"><button type="button" aria-label={`Excluir ocorrência ${i + 1}`} title="Excluir ocorrência" className="px-2 text-destructive" onClick={() => setF((p) => ({ ...p, ocorrencias: p.ocorrencias.filter((_, j) => j !== i) }))}>✕</button></td>
               </tr>
             ))}
           </tbody>

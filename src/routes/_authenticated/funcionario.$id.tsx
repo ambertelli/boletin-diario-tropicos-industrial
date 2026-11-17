@@ -31,6 +31,22 @@ function Ficha() {
   const linhas = calcularFicha(lq.data ?? []);
   const ult = linhas.at(-1);
 
+  async function removerDoBoletim(l: Lancamento) {
+    if (!l.boletim_id || !confirm("Remover esta ocorrência do boletim? A ficha será atualizada.")) return;
+    const { data: b, error } = await supabase.from("boletins").select("ocorrencias").eq("id", l.boletim_id).single();
+    if (error || !b) { toast.error("Não foi possível abrir o boletim."); return; }
+    const lista = (b.ocorrencias ?? []) as { funcionario_id?: string; nome?: string }[];
+    const norm = (x = "") => x.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
+    let feito = false;
+    const resto = lista.filter((o) => {
+      if (feito) return true;
+      const meu = o.funcionario_id ? o.funcionario_id === id : norm(o.nome) === norm(f?.nome);
+      if (meu) { feito = true; return false; }
+      return true;
+    });
+    const r = await supabase.from("boletins").update({ ocorrencias: resto } as never).eq("id", l.boletim_id);
+    if (r.error) toast.error(r.error.message); else { toast.success("Ocorrência removida"); refresh(); qc.invalidateQueries({ queryKey: ["boletim", l.boletim_id] }); }
+  }
   async function salvarFunc(campo: string, valor: string) {
     const { error } = await supabase.from("funcionarios").update({ [campo]: valor || null } as never).eq("id", id);
     if (error) toast.error(error.message); else qc.invalidateQueries({ queryKey: ["funcionario", id] });
@@ -84,7 +100,10 @@ function Ficha() {
                 <td className="px-2 py-1">{br(l.data)}</td><td className="px-2">{l.tipo}</td><td className="px-2">{l.periodo}</td>
                 <td className="px-2 text-right">{l.tipo === "F" ? "" : l.dias || ""}</td><td className="px-2 text-right font-semibold">{l.saldo}</td>
                 <td className="px-2 text-right">{l.faltas || ""}</td><td className="px-2 text-right">{l.acumFaltas}</td><td className="px-2">{l.descricao}</td>
-                <td className="px-2">{l.boletim_id ? <span className="text-xs text-muted-foreground">boletim</span> :
+                <td className="px-2">{l.boletim_id ? <span className="flex gap-2 whitespace-nowrap text-xs">
+                  <Link to="/boletim/$id" params={{ id: l.boletim_id }} className="text-primary underline">editar no boletim</Link>
+                  <button className="text-muted-foreground hover:text-destructive" onClick={() => removerDoBoletim(l)}>remover</button>
+                </span> :
                   <button className="text-xs text-muted-foreground hover:text-destructive" onClick={async () => { await supabase.from("funcionario_lancamentos").delete().eq("id", l.id); refresh(); }}>remover</button>}</td>
               </tr>
             ))}
