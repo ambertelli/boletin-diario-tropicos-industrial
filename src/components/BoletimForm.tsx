@@ -1,7 +1,7 @@
 import logoAsset from "@/assets/logo-tropicos-transparente.png.asset.json";
 import { useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { boletinsCicloQuery, boletinsDiaQuery, boletinsMesQuery, cadastrosQuery, espelhoQuery, programacaoQuery, type Boletim } from "@/lib/dados";
@@ -36,6 +36,41 @@ export function BoletimForm({ inicial, id }: { inicial: Form; id?: string }) {
     ocorrencias: inicial.ocorrencias.length ? inicial.ocorrencias : Array.from({ length: 3 }, () => ({ data: "", nome: "", turno: "", dias: "", ocorrencia: "" })),
   });
   const [busy, setBusy] = useState(false);
+  const rascKey = "boletim-rascunho:" + (id ?? "novo");
+  const pronto = useRef(false);
+  const original = useRef<string | null>(null);
+  const sujo = useRef(false);
+  useEffect(() => {
+    try {
+      const r = localStorage.getItem(rascKey);
+      if (r) {
+        const d = JSON.parse(r) as { form: Form; em: string };
+        original.current = JSON.stringify(f);
+        setF(d.form);
+        sujo.current = true;
+        toast.info("Rascunho não salvo recuperado (" + new Date(d.em).toLocaleString("pt-BR") + "). Confira e clique em Salvar boletim.", { duration: 10000 });
+      }
+    } catch { /* ignora */ }
+    pronto.current = true;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rascKey]);
+  useEffect(() => {
+    if (!pronto.current) return;
+    const atual = JSON.stringify(f);
+    if (original.current === null) { original.current = atual; return; }
+    if (atual === original.current) return;
+    sujo.current = true;
+    const t = setTimeout(() => {
+      try { localStorage.setItem(rascKey, JSON.stringify({ form: f, em: new Date().toISOString() })); } catch { /* cheio */ }
+    }, 500);
+    return () => clearTimeout(t);
+  }, [f, rascKey]);
+  useEffect(() => {
+    const h = (e: BeforeUnloadEvent) => { if (sujo.current) { e.preventDefault(); e.returnValue = ""; } };
+    window.addEventListener("beforeunload", h);
+    return () => window.removeEventListener("beforeunload", h);
+  }, []);
+  const limparRascunho = () => { sujo.current = false; pronto.current = false; try { localStorage.removeItem(rascKey); localStorage.removeItem("boletim-rascunho:novo"); } catch { /* */ } };
   const qc = useQueryClient();
   const navigate = useNavigate();
   const ciclo = dataCiclo(f.data, f.horario);
@@ -108,6 +143,7 @@ export function BoletimForm({ inicial, id }: { inicial: Form; id?: string }) {
       qc.setQueryData<Boletim[]>(["boletins", "ciclo", ciclo], (old) => [...(old ?? []).filter((b) => b.id !== bid), local]);
       qc.setQueryData(["boletim", bid], local);
       setBusy(false);
+      limparRascunho();
       toast.warning("Sem conexão — boletim guardado no aparelho e será enviado automaticamente");
       navigate({ to: "/painel" });
     };
@@ -126,6 +162,7 @@ export function BoletimForm({ inicial, id }: { inicial: Form; id?: string }) {
       toast.error(r.error.code === "23505" ? "Já existe boletim para este dia e horário" : r.error.message);
       return;
     }
+    limparRascunho();
     toast.success("Boletim salvo — programação atualizada");
     qc.invalidateQueries({ queryKey: ["boletins"] });
     qc.invalidateQueries({ queryKey: ["boletim"] });
