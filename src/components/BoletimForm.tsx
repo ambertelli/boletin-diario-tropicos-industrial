@@ -33,7 +33,7 @@ export function BoletimForm({ inicial, id }: { inicial: Form; id?: string }) {
     ...inicial,
     producao: preencher(inicial.producao),
     paradas: inicial.paradas.length ? inicial.paradas : Array.from({ length: 4 }, () => ({ maquina: "", numero: "", inicio: "", fim: "", descricao: "" })),
-    ocorrencias: inicial.ocorrencias.length ? inicial.ocorrencias : Array.from({ length: 3 }, () => ({ data: "", nome: "", turno: inicial.turma, ocorrencia: "" })),
+    ocorrencias: inicial.ocorrencias.length ? inicial.ocorrencias : Array.from({ length: 3 }, () => ({ data: "", nome: "", turno: "", dias: "", ocorrencia: "" })),
   });
   const [busy, setBusy] = useState(false);
   const qc = useQueryClient();
@@ -244,11 +244,11 @@ export function BoletimForm({ inicial, id }: { inicial: Form; id?: string }) {
 
         <div className="sheet-title border-t">Ocorrências com Funcionários</div>
         <table className="w-full text-sm">
-          <thead><tr><th className="sheet-th w-32">Data</th><th className="sheet-th">Nome</th><th className="sheet-th w-20">Turno</th><th className="sheet-th">Ocorrência</th><th className="sheet-th w-10"></th></tr></thead>
+          <thead><tr><th className="sheet-th w-32">Data</th><th className="sheet-th">Nome</th><th className="sheet-th w-20">Turno</th><th className="sheet-th">Ocorrência</th><th className="sheet-th w-20">Dias</th><th className="sheet-th w-10"></th></tr></thead>
           <tbody>
             {f.ocorrencias.map((o, i) => (
               <tr key={i} className="border-t">
-                {(["data", "nome", "turno", "ocorrencia"] as (keyof Ocorrencia)[]).map((k) => (
+                {(["data", "nome", "turno", "ocorrencia", "dias"] as (keyof Ocorrencia)[]).map((k) => (
                   <td key={k} className="border-r last:border-r-0">{k === "nome" ? (
                     <select aria-label={`Funcionário da ocorrência ${i + 1}`} className="sheet-cell" value={o.funcionario_id ?? identificarFuncionario(o.nome, funcs)?.id ?? o.nome} onChange={(e) => {
                       const funcionario = funcs.find((x) => x.id === e.target.value);
@@ -258,7 +258,13 @@ export function BoletimForm({ inicial, id }: { inicial: Form; id?: string }) {
                       {o.nome && !o.funcionario_id && !identificarFuncionario(o.nome, funcs) && <option value={o.nome}>{o.nome}</option>}
                       {funcsOrdem.map((x) => <option key={x.id} value={x.id}>{`${x.nome} — ${x.funcao} — Turma ${x.turma}${x.turma === f.turma ? "" : " (outra turma)"}`}</option>)}
                     </select>
-                  ) : <input aria-label={`${k} da ocorrência ${i + 1}`} className="sheet-cell" list={k === "ocorrencia" ? "lista-ocorrencias" : undefined} value={o[k]} onChange={(e) => setArr("ocorrencias", i, k, e.target.value)} />}</td>
+                  ) : k === "turno" ? (
+                    <select aria-label={`Turno da ocorrência ${i + 1}`} className="sheet-cell" value={o.turno ?? ""} onChange={(e) => setArr("ocorrencias", i, "turno", e.target.value)}>
+                      <option value=""></option>{TURMAS.map((t) => <option key={t} value={t}>{t}</option>)}
+                    </select>
+                  ) : k === "dias" ? (
+                    <input aria-label={`Dias da ocorrência ${i + 1}`} inputMode="decimal" placeholder={/falta/i.test(o.ocorrencia) ? "1" : ""} className="sheet-cell text-right" value={o.dias ?? ""} onChange={(e) => setArr("ocorrencias", i, "dias", e.target.value)} />
+                  ) : <input aria-label={`${k} da ocorrência ${i + 1}`} className="sheet-cell" list={k === "ocorrencia" ? "lista-ocorrencias" : undefined} value={o[k] ?? ""} onChange={(e) => setArr("ocorrencias", i, k, e.target.value)} />}</td>
                 ))}
                 <td className="text-center"><button type="button" aria-label={`Excluir ocorrência ${i + 1}`} title="Excluir ocorrência" className="px-2 text-destructive" onClick={() => setF((p) => ({ ...p, ocorrencias: p.ocorrencias.filter((_, j) => j !== i) }))}>✕</button></td>
               </tr>
@@ -266,7 +272,7 @@ export function BoletimForm({ inicial, id }: { inicial: Form; id?: string }) {
           </tbody>
         </table>
         <datalist id="lista-ocorrencias">{["Falta", "Troca de horário", "Cobertura de turno", "Dobra", "Folga", "Atestado", "Dispensa", "Férias"].map((x) => <option key={x} value={x} />)}</datalist>
-        <AddBtn onClick={() => setF({ ...f, ocorrencias: [...f.ocorrencias, { data: "", nome: "", turno: f.turma, ocorrencia: "" }] })} />
+        <AddBtn onClick={() => setF({ ...f, ocorrencias: [...f.ocorrencias, { data: "", nome: "", turno: "", dias: "", ocorrencia: "" }] })} />
 
         <div className="sheet-title border-t">Acidente de trabalho</div>
         <div className="grid text-sm sm:grid-cols-2">

@@ -43,6 +43,13 @@
       "when": 1794661014597,
       "tag": "0005_corrigir_ocorrencias_faltas",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1794998953250,
+      "tag": "0006_ocorrencia_dias",
+      "breakpoints": true
     }
   ]
 }
