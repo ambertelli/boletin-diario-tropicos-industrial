@@ -39,7 +39,7 @@ const Email = ({ periodo = '', linhas = [] }: Props) => (
 
 export const template = {
   component: Email,
-  subject: (d: Record<string, any>) => `Ocorrências de funcionários – ${d.periodo ?? ''}`,
+  subject: (d: Record<string, any>) => `Ocorrências de funcionários – ${d['periodo'] ?? ''}`,
   displayName: 'Relatório diário RH',
   previewData: { periodo: '18/11/2026 06h a 19/11/2026 06h', linhas: [{ data: '18/11/2026', turma: 'B', horario: '12:00 as 18:00', nome: 'Maria Silva', turno: 'A', ocorrencia: 'Falta', dias: '1' }] },
 } satisfies TemplateEntry
