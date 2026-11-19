@@ -10,7 +10,7 @@ import path from "node:path";
 import { loadEnv } from "vite";
 
 // Variáveis de servidor (sem prefixo VITE_) para rotas do servidor.
-Object.assign(process.env, loadEnv(process.env.NODE_ENV === "production" ? "production" : "development", process.cwd(), ""));
+Object.assign(process.env, loadEnv(process.env["NODE_ENV"] === "production" ? "production" : "development", process.cwd(), ""));
 
 export default defineConfig({
   tanstackStart: {
