@@ -1,3 +1,4 @@
+import { template as relatorioRh } from './relatorio-rh'
 import type { ComponentType } from 'react'
 
 export interface TemplateEntry {
@@ -20,4 +21,5 @@ export interface TemplateEntry {
 export const TEMPLATES: Record<string, TemplateEntry> = {
   // Add templates here as they are created, e.g.:
   // 'welcome': welcomeTemplate,
+  'relatorio-rh': relatorioRh,
 }

@@ -21,6 +21,7 @@ import { Route as AuthenticatedProgramacaoProducaoRouteImport } from './routes/_
 import { Route as AuthenticatedBoletimIdRouteImport } from './routes/_authenticated/boletim.$id'
 import { Route as AuthenticatedBoletimNovoRouteImport } from './routes/_authenticated/boletim.novo'
 import { Route as AuthenticatedFuncionarioIdRouteImport } from './routes/_authenticated/funcionario.$id'
+import { Route as ApiPublicJobsRelatorioRhRouteImport } from './routes/api/public/jobs/relatorio-rh'
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 
 const IndexRoute = IndexRouteImport.update({
@@ -87,6 +88,12 @@ const AuthenticatedFuncionarioIdRoute =
     path: '/funcionario/$id',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const ApiPublicJobsRelatorioRhRoute =
+  ApiPublicJobsRelatorioRhRouteImport.update({
+    id: '/api/public/jobs/relatorio-rh',
+    path: '/api/public/jobs/relatorio-rh',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const LovableEmailTransactionalPreviewRoute =
   LovableEmailTransactionalPreviewRouteImport.update({
     id: '/lovable/email/transactional/preview',
@@ -106,6 +113,7 @@ export interface FileRoutesByFullPath {
   '/boletim/$id': typeof AuthenticatedBoletimIdRoute
   '/boletim/novo': typeof AuthenticatedBoletimNovoRoute
   '/funcionario/$id': typeof AuthenticatedFuncionarioIdRoute
+  '/api/public/jobs/relatorio-rh': typeof ApiPublicJobsRelatorioRhRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
 }
 export interface FileRoutesByTo {
@@ -120,6 +128,7 @@ export interface FileRoutesByTo {
   '/boletim/$id': typeof AuthenticatedBoletimIdRoute
   '/boletim/novo': typeof AuthenticatedBoletimNovoRoute
   '/funcionario/$id': typeof AuthenticatedFuncionarioIdRoute
+  '/api/public/jobs/relatorio-rh': typeof ApiPublicJobsRelatorioRhRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
 }
 export interface FileRoutesById {
@@ -136,6 +145,7 @@ export interface FileRoutesById {
   '/_authenticated/boletim/$id': typeof AuthenticatedBoletimIdRoute
   '/_authenticated/boletim/novo': typeof AuthenticatedBoletimNovoRoute
   '/_authenticated/funcionario/$id': typeof AuthenticatedFuncionarioIdRoute
+  '/api/public/jobs/relatorio-rh': typeof ApiPublicJobsRelatorioRhRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
 }
 export interface FileRouteTypes {
@@ -152,6 +162,7 @@ export interface FileRouteTypes {
     | '/boletim/$id'
     | '/boletim/novo'
     | '/funcionario/$id'
+    | '/api/public/jobs/relatorio-rh'
     | '/lovable/email/transactional/preview'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -166,6 +177,7 @@ export interface FileRouteTypes {
     | '/boletim/$id'
     | '/boletim/novo'
     | '/funcionario/$id'
+    | '/api/public/jobs/relatorio-rh'
     | '/lovable/email/transactional/preview'
   id:
     | '__root__'
@@ -181,6 +193,7 @@ export interface FileRouteTypes {
     | '/_authenticated/boletim/$id'
     | '/_authenticated/boletim/novo'
     | '/_authenticated/funcionario/$id'
+    | '/api/public/jobs/relatorio-rh'
     | '/lovable/email/transactional/preview'
   fileRoutesById: FileRoutesById
 }
@@ -188,6 +201,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  ApiPublicJobsRelatorioRhRoute: typeof ApiPublicJobsRelatorioRhRoute
   LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
 }
 
@@ -277,6 +291,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedFuncionarioIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/jobs/relatorio-rh': {
+      id: '/api/public/jobs/relatorio-rh'
+      path: '/api/public/jobs/relatorio-rh'
+      fullPath: '/api/public/jobs/relatorio-rh'
+      preLoaderRoute: typeof ApiPublicJobsRelatorioRhRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/lovable/email/transactional/preview': {
       id: '/lovable/email/transactional/preview'
       path: '/lovable/email/transactional/preview'
@@ -318,6 +339,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  ApiPublicJobsRelatorioRhRoute: ApiPublicJobsRelatorioRhRoute,
   LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
 }
 export const routeTree = rootRouteImport
