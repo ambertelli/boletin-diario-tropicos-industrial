@@ -50,6 +50,13 @@
       "when": 1794998953250,
       "tag": "0006_ocorrencia_dias",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1795099741002,
+      "tag": "0007_funcionario_telefone",
+      "breakpoints": true
     }
   ]
 }

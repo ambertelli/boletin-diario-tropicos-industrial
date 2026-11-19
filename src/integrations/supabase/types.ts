@@ -130,6 +130,7 @@ export type Database = {
           funcao: string
           id: string
           nome: string
+          telefone: string
           turma: string
           vencimento_ferias: string | null
         }
@@ -138,6 +139,7 @@ export type Database = {
           funcao?: string
           id?: string
           nome: string
+          telefone?: string
           turma?: string
           vencimento_ferias?: string | null
         }
@@ -146,6 +148,7 @@ export type Database = {
           funcao?: string
           id?: string
           nome?: string
+          telefone?: string
           turma?: string
           vencimento_ferias?: string | null
         }

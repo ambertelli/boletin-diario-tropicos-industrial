@@ -48,7 +48,7 @@ function Ficha() {
     if (r.error) toast.error(r.error.message); else { toast.success("Ocorrência removida"); refresh(); qc.invalidateQueries({ queryKey: ["boletim", l.boletim_id] }); }
   }
   async function salvarFunc(campo: string, valor: string) {
-    const { error } = await supabase.from("funcionarios").update({ [campo]: valor || null } as never).eq("id", id);
+    const { error } = await supabase.from("funcionarios").update({ [campo]: campo === "telefone" ? valor.trim() : valor || null } as never).eq("id", id);
     if (error) toast.error(error.message); else qc.invalidateQueries({ queryKey: ["funcionario", id] });
   }
   async function add(e: React.FormEvent) {
@@ -68,7 +68,7 @@ function Ficha() {
   return (
     <div className="space-y-4">
       <Link to="/funcionarios" className="text-sm text-muted-foreground underline">← Funcionários</Link>
-      <div className="grid gap-2 rounded-md border bg-card p-3 sm:grid-cols-4">
+      <div className="grid gap-2 rounded-md border bg-card p-3 sm:grid-cols-5">
         <label className="text-xs">Funcionário<Input defaultValue={f.nome} onBlur={(e) => salvarFunc("nome", e.target.value)} /></label>
         <label className="text-xs">Função<Input defaultValue={f.funcao} onBlur={(e) => salvarFunc("funcao", e.target.value)} /></label>
         <label className="text-xs">Turma
@@ -77,6 +77,7 @@ function Ficha() {
           </select>
         </label>
         <label className="text-xs">Vencimento de férias<Input type="date" defaultValue={f.vencimento_ferias ?? ""} onBlur={(e) => salvarFunc("vencimento_ferias", e.target.value)} /></label>
+        <label className="text-xs">Telefone de contato<Input type="tel" defaultValue={f.telefone ?? ""} onBlur={(e) => salvarFunc("telefone", e.target.value)} /></label>
       </div>
       <div className="flex gap-4 text-lg font-bold">
         <span>Saldo férias: {ult?.saldo ?? 0} dias</span><span>Faltas acumuladas: {ult?.acumFaltas ?? 0}</span>
