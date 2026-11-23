@@ -44,8 +44,55 @@ export function SaldoTabela({ programacao, linhas, observacoes = [] }: { program
     </tbody>
   );
 
+  const cartoes = (titulo: string, lista: Saldo[]) => lista.length > 0 && (
+    <div key={titulo}>
+      <div className="sheet-th bg-muted text-center text-xs font-bold uppercase">{titulo}</div>
+      {lista.map((i) => {
+        const obs = obsDe.get(norm(i.marca));
+        return (
+          <div key={i.id} className="space-y-2 border-t p-3">
+            <div className="flex min-w-0 items-start gap-2">
+              <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-primary text-xs font-bold text-primary-foreground">{i.prioridadeFabricacao ?? "—"}</span>
+              <span className="min-w-0 break-words font-semibold">{i.marca}</span>
+            </div>
+            {obs?.length ? <div className="rounded-md border-2 border-warning-foreground/30 bg-warning px-2 py-1 text-xs font-bold uppercase text-warning-foreground"><AlertTriangle className="mr-1 inline h-4 w-4 align-[-3px] text-destructive" />{obs.join(" · ")}</div> : null}
+            <div className="grid grid-cols-3 gap-2 text-center">
+              <div><div className="text-[11px] text-muted-foreground">Programado</div><div className="font-semibold">{fmt(i.quantidade)}</div></div>
+              <div><div className="text-[11px] text-muted-foreground">Produzido</div><div className="font-semibold">{fmt(i.produzido)}</div></div>
+              <div><div className="text-[11px] text-muted-foreground">Saldo</div><div className={`font-bold ${i.saldo <= 0 ? "text-success" : "text-primary"}`}>{fmtSaldo(i.saldo)}</div></div>
+            </div>
+            <Progress value={i.quantidade ? Math.min(100, (i.produzido / i.quantidade) * 100) : 0} />
+          </div>
+        );
+      })}
+    </div>
+  );
+
   return (
-    <table className="w-full text-sm">
+    <>
+    <div className="text-sm md:hidden">
+      {cartoes(BLOCOS[0]!.titulo, itens.filter((i) => BLOCOS[0]!.ok(linhaDe.get(i.id) ?? 0)))}
+      <div className={`sheet-th text-center text-xs font-bold uppercase ${obsAvulsas.length ? "animate-pulse bg-destructive text-destructive-foreground" : "bg-muted"}`}>{obsAvulsas.length ? <><AlertTriangle className="mr-1 inline h-4 w-4 align-[-3px]" />Atenção urgente — </> : ""}Programação anterior e observações</div>
+      {obsAvulsas.length === 0
+        ? <p className="border-t p-3 text-muted-foreground">Nenhuma observação.</p>
+        : obsAvulsas.map((o, k) => (
+          <div key={"mo" + k} className="border-2 border-destructive bg-destructive/10 p-3 font-bold text-destructive">
+            <div>{o.marca || "—"}</div><div className="font-semibold">{o.obs}</div>
+          </div>
+        ))}
+      {BLOCOS.slice(1).map((b) => cartoes(b.titulo, itens.filter((i) => b.ok(linhaDe.get(i.id) ?? 0))))}
+      {fora.length > 0 && (
+        <div>
+          <div className="sheet-th bg-muted text-center text-xs font-bold uppercase">Fora da programação</div>
+          {fora.map((f, k) => (
+            <div key={"mf" + k} className="flex justify-between gap-2 border-t bg-muted/50 p-3 text-muted-foreground">
+              <span className="min-w-0 break-words">{f.marca}</span><span className="shrink-0">Produzido: <b>{fmt(f.quantidade)}</b></span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+    <table className="hidden w-full text-sm md:table">
       <thead>
         <tr className="text-left">
           <th className="sheet-th w-20 text-center">Prioridade</th>
@@ -84,5 +131,6 @@ export function SaldoTabela({ programacao, linhas, observacoes = [] }: { program
         </tbody>
       )}
     </table>
+    </>
   );
 }
