@@ -78,10 +78,10 @@ function AuthPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-sidebar px-4">
-      <div className="dark w-full max-w-sm rounded-lg border border-sidebar-border bg-sidebar-accent p-6 text-sidebar-foreground shadow-xl">
+    <div className="flex min-h-screen items-center justify-center bg-background px-4">
+      <div className="w-full max-w-sm rounded-lg border border-border bg-muted p-6 text-foreground shadow-xl">
         <h1><img src={logoAsset.url} alt="Trópico's" className="mb-2 w-full" /></h1>
-        <p className="mb-6 text-sm text-muted-foreground">Diário de Produção · Boletim Conversão</p>
+        <p className="mb-6 text-sm text-foreground/80">Diário de Produção · Boletim Conversão</p>
         {!online && (
           <p className="mb-4 rounded bg-destructive px-3 py-2 text-sm font-medium text-destructive-foreground">
             Sem internet. O primeiro acesso neste aparelho precisa de conexão.
@@ -92,8 +92,8 @@ function AuthPage() {
           <div><Label>Senha</Label><Input type="password" required minLength={6} value={senha} onChange={(e) => setSenha(e.target.value)} /></div>
           <Button className="w-full" disabled={busy || !online}>{modo === "entrar" ? "Entrar" : "Criar conta"}</Button>
         </form>
-        {modo === "entrar" && <button type="button" className="mt-3 w-full text-sm text-sidebar-foreground underline" onClick={esqueci} disabled={!online}>Esqueci a senha</button>}
-        <button className="mt-3 w-full text-sm text-sidebar-foreground underline" onClick={() => setModo(modo === "entrar" ? "criar" : "entrar")}>
+        {modo === "entrar" && <button type="button" className="mt-3 w-full text-sm text-foreground underline" onClick={esqueci} disabled={!online}>Esqueci a senha</button>}
+        <button className="mt-3 w-full text-sm text-foreground underline" onClick={() => setModo(modo === "entrar" ? "criar" : "entrar")}>
           {modo === "entrar" ? "Primeiro acesso? Criar conta" : "Já tenho conta"}
         </button>
       </div>
