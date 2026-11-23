@@ -3,7 +3,6 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable/index";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -71,14 +70,16 @@ function AuthPage() {
     setBusy(false);
   }
 
-  async function google() {
-    const r = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin + "/auth" });
-    if (r.error) toast.error("Não foi possível entrar com Google");
+  async function esqueci() {
+    if (!email) { toast.error("Digite seu e-mail acima e clique de novo em Esqueci a senha."); return; }
+    const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin + "/reset-password" });
+    if (error) toast.error("Não foi possível enviar. Tente de novo.");
+    else toast.success("Enviamos um link para trocar a senha no seu e-mail.");
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-muted px-4">
-      <div className="dark w-full max-w-sm rounded-lg bg-sidebar p-6 text-sidebar-foreground shadow-xl">
+    <div className="flex min-h-screen items-center justify-center bg-sidebar px-4">
+      <div className="dark w-full max-w-sm rounded-lg border border-sidebar-border bg-sidebar-accent p-6 text-sidebar-foreground shadow-xl">
         <h1><img src={logoAsset.url} alt="Trópico's" className="mb-2 w-full" /></h1>
         <p className="mb-6 text-sm text-muted-foreground">Diário de Produção · Boletim Conversão</p>
         {!online && (
@@ -91,8 +92,8 @@ function AuthPage() {
           <div><Label>Senha</Label><Input type="password" required minLength={6} value={senha} onChange={(e) => setSenha(e.target.value)} /></div>
           <Button className="w-full" disabled={busy || !online}>{modo === "entrar" ? "Entrar" : "Criar conta"}</Button>
         </form>
-        <Button variant="outline" className="mt-3 w-full" onClick={google} disabled={!online}>Continuar com Google</Button>
-        <button className="mt-4 w-full text-sm text-muted-foreground underline" onClick={() => setModo(modo === "entrar" ? "criar" : "entrar")}>
+        {modo === "entrar" && <button type="button" className="mt-3 w-full text-sm text-sidebar-foreground underline" onClick={esqueci} disabled={!online}>Esqueci a senha</button>}
+        <button className="mt-3 w-full text-sm text-sidebar-foreground underline" onClick={() => setModo(modo === "entrar" ? "criar" : "entrar")}>
           {modo === "entrar" ? "Primeiro acesso? Criar conta" : "Já tenho conta"}
         </button>
       </div>
