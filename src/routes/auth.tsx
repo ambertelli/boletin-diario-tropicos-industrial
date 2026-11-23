@@ -79,21 +79,21 @@ function AuthPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="w-full max-w-sm rounded-lg border border-border bg-muted p-6 text-foreground shadow-xl">
+      <div className="w-full max-w-sm rounded-lg border border-white/10 p-6 text-white shadow-xl" style={{ backgroundColor: "#00344e" }}>
         <h1><img src={logoAsset.url} alt="Trópico's" className="mb-2 w-full" /></h1>
-        <p className="mb-6 text-sm text-foreground/80">Diário de Produção · Boletim Conversão</p>
+        <p className="mb-6 text-sm text-white/80">Diário de Produção · Boletim Conversão</p>
         {!online && (
           <p className="mb-4 rounded bg-destructive px-3 py-2 text-sm font-medium text-destructive-foreground">
             Sem internet. O primeiro acesso neste aparelho precisa de conexão.
           </p>
         )}
         <form onSubmit={enviar} className="space-y-3">
-          <div><Label>E-mail</Label><Input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} /></div>
-          <div><Label>Senha</Label><Input type="password" required minLength={6} value={senha} onChange={(e) => setSenha(e.target.value)} /></div>
+          <div><Label>E-mail</Label><Input className="bg-white text-slate-900" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} /></div>
+          <div><Label>Senha</Label><Input className="bg-white text-slate-900" type="password" required minLength={6} value={senha} onChange={(e) => setSenha(e.target.value)} /></div>
           <Button className="w-full" disabled={busy || !online}>{modo === "entrar" ? "Entrar" : "Criar conta"}</Button>
         </form>
-        {modo === "entrar" && <button type="button" className="mt-3 w-full text-sm text-foreground underline" onClick={esqueci} disabled={!online}>Esqueci a senha</button>}
-        <button className="mt-3 w-full text-sm text-foreground underline" onClick={() => setModo(modo === "entrar" ? "criar" : "entrar")}>
+        {modo === "entrar" && <button type="button" className="mt-3 w-full text-sm text-white underline" onClick={esqueci} disabled={!online}>Esqueci a senha</button>}
+        <button className="mt-3 w-full text-sm text-white underline" onClick={() => setModo(modo === "entrar" ? "criar" : "entrar")}>
           {modo === "entrar" ? "Primeiro acesso? Criar conta" : "Já tenho conta"}
         </button>
       </div>
