@@ -4,7 +4,7 @@ import { hojeISO, dataBR, calcularSaldos, fmt, fmtSaldo, somarDias } from "@/lib
 import { boletinsCicloQuery, espelhoQuery } from "@/lib/dados";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
+import { ProgressoStatus, corSaldo } from "@/components/ProgressoStatus";
 
 export const Route = createFileRoute("/_authenticated/programacao-producao")({
   validateSearch: (search: Record<string, unknown>): { data?: string } => {
@@ -66,8 +66,8 @@ function ProgramacaoProducao() {
                 <td className="px-2 py-1.5">{meta.get(i.id)?.prioridade}</td>
                 <td className="px-2 font-medium">{i.marca}</td>
                 <td className="px-2 text-right">{fmt(i.quantidade)}</td><td className="px-2 text-right">{fmt(i.produzido)}</td>
-                <td className={`px-2 text-right font-semibold ${i.saldo <= 0 ? "text-success" : "text-primary"}`}>{fmtSaldo(i.saldo)}</td>
-                <td className="px-2"><Progress value={i.quantidade ? Math.min(100, (i.produzido / i.quantidade) * 100) : 0} /></td>
+                <td className={`px-2 text-right font-semibold ${corSaldo(i.saldo)}`}>{fmtSaldo(i.saldo)}</td>
+                <td className="px-2"><ProgressoStatus programado={i.quantidade} produzido={i.produzido} /></td>
               </tr>))}</tbody>
           </table></div>
         </section>))}

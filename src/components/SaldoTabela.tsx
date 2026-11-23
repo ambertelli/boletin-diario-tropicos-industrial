@@ -1,6 +1,6 @@
 import { AlertTriangle } from "lucide-react";
 import { calcularSaldos, fmt, fmtSaldo, type ItemProgramacao, type LinhaProducao, type Saldo } from "@/lib/producao";
-import { Progress } from "@/components/ui/progress";
+import { ProgressoStatus, corSaldo } from "@/components/ProgressoStatus";
 import { ordenarPorPrioridade, type Observacao } from "@/lib/espelho";
 
 type ItemComLinha = ItemProgramacao & { embaladeira?: number };
@@ -37,8 +37,8 @@ export function SaldoTabela({ programacao, linhas, observacoes = [] }: { program
             : <span className="text-muted-foreground">—</span>}</td>
           <td className="px-2 text-right">{fmt(i.quantidade)}</td>
           <td className="px-2 text-right">{fmt(i.produzido)}</td>
-          <td className={`px-2 text-right font-semibold ${i.saldo <= 0 ? "text-success" : "text-primary"}`}>{fmtSaldo(i.saldo)}</td>
-          <td className="px-2"><Progress value={i.quantidade ? Math.min(100, (i.produzido / i.quantidade) * 100) : 0} /></td>
+          <td className={`px-2 text-right font-semibold ${corSaldo(i.saldo)}`}>{fmtSaldo(i.saldo)}</td>
+          <td className="px-2"><ProgressoStatus programado={i.quantidade} produzido={i.produzido} /></td>
         </tr>
       ))}
     </tbody>
@@ -59,9 +59,9 @@ export function SaldoTabela({ programacao, linhas, observacoes = [] }: { program
             <div className="grid grid-cols-3 gap-2 text-center">
               <div><div className="text-[11px] text-muted-foreground">Programado</div><div className="font-semibold">{fmt(i.quantidade)}</div></div>
               <div><div className="text-[11px] text-muted-foreground">Produzido</div><div className="font-semibold">{fmt(i.produzido)}</div></div>
-              <div><div className="text-[11px] text-muted-foreground">Saldo</div><div className={`font-bold ${i.saldo <= 0 ? "text-success" : "text-primary"}`}>{fmtSaldo(i.saldo)}</div></div>
+              <div><div className="text-[11px] text-muted-foreground">Saldo</div><div className={`font-bold ${corSaldo(i.saldo)}`}>{fmtSaldo(i.saldo)}</div></div>
             </div>
-            <Progress value={i.quantidade ? Math.min(100, (i.produzido / i.quantidade) * 100) : 0} />
+            <ProgressoStatus programado={i.quantidade} produzido={i.produzido} />
           </div>
         );
       })}
