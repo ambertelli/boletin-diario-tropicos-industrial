@@ -1,6 +1,6 @@
 import { somarDias } from "./producao";
 
-export const EMAILS_RH = ["rh@tropicos.ind.br", "rh1@tropicos.ind.br", "conversao@tropicos.ind.br"];
+export const EMAILS_RH = ["rh@tropicos.ind.br", "conversao@tropicos.ind.br"];
 
 /** Turnos do ciclo 06h de `inicio` até 06h do dia seguinte. */
 export function turnosDoCiclo(inicio: string) {
