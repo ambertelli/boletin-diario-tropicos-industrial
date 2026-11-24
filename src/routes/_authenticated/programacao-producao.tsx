@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { hojeISO, dataBR, calcularSaldos, fmt, fmtSaldo, somarDias } from "@/lib/producao";
+import { hojeISO, dataBR, calcularSaldos, fmt, fmtSaldo, somarDias, type Saldo } from "@/lib/producao";
 import { boletinsCicloQuery, espelhoQuery } from "@/lib/dados";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -56,12 +56,15 @@ function ProgramacaoProducao() {
       : esp.data && !esp.data.ok ? <p className="rounded-md border border-destructive p-3 text-sm text-destructive">{esp.data.erro}</p>
       : esp.isError ? <p className="text-sm text-destructive">Sem conexão com o app Programação Diária.</p>
       : !itens.length ? <p className="text-sm text-muted-foreground">Nenhuma programação lançada no app Programação Diária para esta data.</p>
-      : [...grupos.entries()].sort((a, b) => a[0] - b[0]).map(([emb, lista]) => (
+      : [...grupos.entries()].sort((a, b) => a[0] - b[0]).map(([emb, lista]) => {
+        const ordenada = [...lista].sort((a, b) => (meta.get(a.id)?.prioridade ?? 0) - (meta.get(b.id)?.prioridade ?? 0));
+        return (
         <section key={emb} className="overflow-hidden rounded-md border bg-card">
           <div className="sheet-title">{nomeLinha(emb)}</div>
-          <div className="overflow-x-auto"><table className="w-full text-sm">
+          <div className="md:hidden">{ordenada.map((i) => <Cartao key={i.id} item={i} prioridade={meta.get(i.id)?.prioridade} />)}</div>
+          <div className="hidden overflow-x-auto md:block"><table className="w-full text-sm">
             <thead><tr className="text-left"><th className="sheet-th">Prior.</th><th className="sheet-th">Produto</th><th className="sheet-th text-right">Programado</th><th className="sheet-th text-right">Produzido</th><th className="sheet-th text-right">Saldo</th><th className="sheet-th w-40">Progresso</th></tr></thead>
-            <tbody>{lista.sort((a, b) => (meta.get(a.id)?.prioridade ?? 0) - (meta.get(b.id)?.prioridade ?? 0)).map((i) => (
+            <tbody>{ordenada.map((i) => (
               <tr key={i.id} className="border-t">
                 <td className="px-2 py-1.5">{meta.get(i.id)?.prioridade}</td>
                 <td className="px-2 font-medium">{i.marca}</td>
@@ -70,12 +73,30 @@ function ProgramacaoProducao() {
                 <td className="px-2"><ProgressoStatus programado={i.quantidade} produzido={i.produzido} /></td>
               </tr>))}</tbody>
           </table></div>
-        </section>))}
+        </section>);
+      })}
     {fora.length > 0 && <section className="overflow-hidden rounded-md border bg-card">
       <div className="sheet-title">Produção fora da programação (confira nomes nos Cadastros)</div>
       <table className="w-full text-sm"><tbody>{fora.map((f, k) => <tr key={k} className="border-t text-muted-foreground"><td className="px-2 py-1.5">{f.marca}</td><td className="px-2 text-right">{fmt(f.quantidade)}</td></tr>)}</tbody></table>
     </section>}
     <p className="text-xs text-muted-foreground">A programação é editada só no app Programação Diária. Produto, formato e metragem precisam ser iguais aos usados no boletim para debitar.</p>
   </div>;
+}
+/** Cartão de um item: prioridade, produto, Programado/Produzido/Saldo e barra de progresso. */
+function Cartao({ item, prioridade }: { item: Saldo; prioridade?: number | null }) {
+  return (
+    <div className="space-y-2 border-t p-3">
+      <div className="flex min-w-0 items-start gap-2">
+        <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-primary text-xs font-bold text-primary-foreground">{prioridade ?? "—"}</span>
+        <span className="min-w-0 break-words font-semibold">{item.marca}</span>
+      </div>
+      <div className="grid grid-cols-3 gap-2 text-center">
+        <div><div className="text-[11px] text-muted-foreground">Programado</div><div className="font-semibold">{fmt(item.quantidade)}</div></div>
+        <div><div className="text-[11px] text-muted-foreground">Produzido</div><div className="font-semibold">{fmt(item.produzido)}</div></div>
+        <div><div className="text-[11px] text-muted-foreground">Saldo</div><div className={`font-bold ${corSaldo(item.saldo)}`}>{fmtSaldo(item.saldo)}</div></div>
+      </div>
+      <ProgressoStatus programado={item.quantidade} produzido={item.produzido} />
+    </div>
+  );
 }
 function Metric({ label, value }: { label: string; value: string }) { return <div className="rounded-md border bg-card p-4"><div className="text-sm font-semibold uppercase text-muted-foreground">{label}</div><div className="font-display text-3xl font-bold">{value}</div></div>; }
