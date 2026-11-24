@@ -83,7 +83,7 @@ function ProgramacaoProducao() {
   </div>;
 }
 /** Cartão de um item: prioridade, produto, Programado/Produzido/Saldo e barra de progresso. */
-function Cartao({ item, prioridade }: { item: Saldo; prioridade?: number | null }) {
+function Cartao({ item, prioridade }: { item: Saldo; prioridade?: number | null | undefined }) {
   return (
     <div className="space-y-2 border-t p-3">
       <div className="flex min-w-0 items-start gap-2">
