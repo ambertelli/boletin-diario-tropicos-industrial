@@ -12,6 +12,9 @@ export const Route = createFileRoute("/_authenticated/painel")({
   component: Painel,
 });
 
+/** Sequência da fábrica: o dia de trabalho começa às 06h. */
+const ORDEM_TURNOS = [HORARIOS[1], HORARIOS[2], HORARIOS[3], HORARIOS[0]];
+
 function cicloInicial(data: string) {
   return data === hojeISO() && new Date().getHours() < 12 ? somarDias(data, -1) : data;
 }
@@ -53,8 +56,9 @@ function Painel() {
       <section className="overflow-hidden rounded-md border bg-card">
         <div className="sheet-title">Turnos</div>
         <div className="grid sm:grid-cols-4">
-          {HORARIOS.map((h) => {
+          {ORDEM_TURNOS.map((h) => {
             const b = dia.data?.find((x) => x.horario === h);
+            const folga = !b && h === HORARIOS[0] && new Date(`${data}T12:00:00`).getDay() === 1;
             return (
               <div key={h} className="border-b p-4 sm:border-b-0 sm:border-r last:border-r-0">
                 <div className="font-display text-lg font-semibold">{h}</div>
@@ -65,6 +69,8 @@ function Painel() {
                     <div className="mt-1 text-2xl font-bold text-primary">{fmt(totalBoletim(b.producao))}</div>
                     <Link to="/boletim/$id" params={{ id: b.id }} className="text-sm underline">Abrir boletim</Link>
                   </>
+                ) : folga ? (
+                  <div className="text-sm text-muted-foreground">Folga semanal — fábrica inicia segunda às 06h</div>
                 ) : (
                   <>
                     <div className="text-sm text-muted-foreground">Pendente</div>

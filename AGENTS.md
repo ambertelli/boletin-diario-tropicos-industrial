@@ -11,3 +11,4 @@
 - Offline: vite-plugin-pwa (generateSW, outDir dist/client) registered only via src/lib/pwa.ts; boletim writes go through the IndexedDB queue in src/lib/fila.ts + src/lib/sync.ts when offline. Why: shop floor loses internet; preview must never get a service worker.
 - Programação de produção espelha o app Programação Diária via /api/public/programacao (segredo PLANNER_SYNC_SECRET) e cai na programação manual se vazia. Why: dois bancos separados.
 - Employee occurrences carry a selected employee UUID; legacy names resolve only when normalized matching is unique, and database triggers normalize dates and default absence days. Why: online and queued writes must produce the same employee history without ambiguous attribution.
+- Painel turn cards follow factory order 06-12,12-18,18-24,00-06 and mark Monday 00-06 as weekly rest; why: week starts Monday 06h, avoids misdated boletins.
