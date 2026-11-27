@@ -1,3 +1,5 @@
 - [x] Corrigir datas e identificação dos funcionários nas ocorrências.
 - [x] Contabilizar um dia quando uma falta não informa quantidade.
 - [x] Verificar lançamento do boletim e leitura da falta na ficha.
+- [x] Abrir o lançamento novo com a turma em branco, para o líder escolher.
+- [x] Salvar o boletim sozinho a cada 30 segundos.

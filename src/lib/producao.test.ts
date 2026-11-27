@@ -86,3 +86,13 @@ describe("observações da programação anterior", () => {
     expect(lerObservacoes('[{"marca":"FOFOPEL 16/4","obs":"faltou 20"},{"marca":"","obs":""}]')).toEqual([{ marca: "FOFOPEL 16/4", obs: "faltou 20" }]);
   });
 });
+
+import { novoBoletimInicial } from "./producao";
+describe("abertura de um boletim novo", () => {
+  it("abre com a turma em branco, sem escolher A", () => {
+    const inicial = novoBoletimInicial("2026-11-27", "06:00 as 12:00");
+    expect(inicial.turma).toBe("");
+    expect(inicial.data).toBe("2026-11-27");
+    expect(inicial.horario).toBe("06:00 as 12:00");
+  });
+});

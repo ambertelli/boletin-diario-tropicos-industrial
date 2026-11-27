@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { BoletimForm } from "@/components/BoletimForm";
-import { HORARIOS, hojeISO } from "@/lib/producao";
+import { HORARIOS, hojeISO, novoBoletimInicial } from "@/lib/producao";
 
 export const Route = createFileRoute("/_authenticated/boletim/novo")({
   validateSearch: z.object({ data: z.string().optional(), horario: z.string().optional() }),
@@ -16,12 +16,5 @@ function horarioAtual() {
 
 function Novo() {
   const s = Route.useSearch();
-  return (
-    <BoletimForm
-      inicial={{
-        data: s.data ?? hojeISO(), turma: "A", horario: s.horario ?? horarioAtual(), lider: "",
-        producao: [], paradas: [], ocorrencias: [], acidente: {}, observacoes: "",
-      }}
-    />
-  );
+  return <BoletimForm inicial={novoBoletimInicial(s.data ?? hojeISO(), s.horario ?? horarioAtual())} />;
 }

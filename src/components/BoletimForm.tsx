@@ -36,6 +36,10 @@ export function BoletimForm({ inicial, id }: { inicial: Form; id?: string }) {
     ocorrencias: inicial.ocorrencias.length ? inicial.ocorrencias : Array.from({ length: 3 }, () => ({ data: "", nome: "", turno: "", dias: "", ocorrencia: "" })),
   });
   const [busy, setBusy] = useState(false);
+  const [autoEm, setAutoEm] = useState<string | null>(null);
+  const [bid, setBid] = useState(() => id ?? crypto.randomUUID());
+  const autoOcupado = useRef(false);
+  const autoFalhou = useRef(false);
   const rascKey = "boletim-rascunho:" + (id ?? "novo");
   const pronto = useRef(false);
   const original = useRef<string | null>(null);
@@ -44,7 +48,8 @@ export function BoletimForm({ inicial, id }: { inicial: Form; id?: string }) {
     try {
       const r = localStorage.getItem(rascKey);
       if (r) {
-        const d = JSON.parse(r) as { form: Form; em: string };
+        const d = JSON.parse(r) as { form: Form; em: string; bid?: string };
+        if (d.bid && !id) setBid(d.bid);
         original.current = JSON.stringify(f);
         setF(d.form);
         sujo.current = true;
@@ -61,10 +66,10 @@ export function BoletimForm({ inicial, id }: { inicial: Form; id?: string }) {
     if (atual === original.current) return;
     sujo.current = true;
     const t = setTimeout(() => {
-      try { localStorage.setItem(rascKey, JSON.stringify({ form: f, em: new Date().toISOString() })); } catch { /* cheio */ }
+      try { localStorage.setItem(rascKey, JSON.stringify({ form: f, em: new Date().toISOString(), bid })); } catch { /* cheio */ }
     }, 500);
     return () => clearTimeout(t);
-  }, [f, rascKey]);
+  }, [f, rascKey, bid]);
   useEffect(() => {
     const h = (e: BeforeUnloadEvent) => { if (sujo.current) { e.preventDefault(); e.returnValue = ""; } };
     window.addEventListener("beforeunload", h);
@@ -114,27 +119,96 @@ export function BoletimForm({ inicial, id }: { inicial: Form; id?: string }) {
     setF((p) => ({ ...p, [k]: (p[k] as Record<string, string>[]).map((x, j) => (j === i ? { ...x, [campo]: v } : x)) }));
   const setAc = (k: keyof Acidente, v: string) => setF((p) => ({ ...p, acidente: { ...p.acidente, [k]: v } }));
 
-  async function salvar() {
+  /** Depois de gravar, o rascunho local deixa de ser necessário. */
+  const marcarLimpo = () => {
+    original.current = JSON.stringify(f);
+    sujo.current = false;
+    try { localStorage.removeItem(rascKey); } catch { /* ignora */ }
+  };
+
+  /** Só salva sozinho quando já tem alguma coisa lançada. */
+  const temLancamento =
+    linhasValidas.length > 0 ||
+    f.paradas.some((p) => Object.values(p).some(Boolean)) ||
+    f.ocorrencias.some((o) => o.nome || o.ocorrencia) ||
+    !!f.observacoes.trim() ||
+    Object.values(f.acidente).some(Boolean);
+
+  /** Monta o conteúdo do boletim, ou diz por que ainda não pode salvar. */
+  function montarConteudo(): { payload: Record<string, unknown> } | { erro: string } {
     const ocorrencias: Ocorrencia[] = [];
     for (const o of f.ocorrencias.filter((x) => x.nome || x.ocorrencia)) {
       const data = dataOcorrencia(o.data, f.data);
-      if (!data) { toast.error("Data da ocorrência inválida. Use DD/MM/AAAA."); return; }
+      if (!data) return { erro: "Data da ocorrência inválida. Use DD/MM/AAAA." };
       const funcionario = funcs.find((x) => x.id === o.funcionario_id) ?? identificarFuncionario(o.nome, funcs);
       if (!funcionario && /falta/i.test(o.ocorrencia)) {
-        toast.error("Selecione o funcionário cadastrado para contabilizar a falta na ficha."); return;
+        return { erro: "Selecione o funcionário cadastrado para contabilizar a falta na ficha." };
       }
       ocorrencias.push({ ...o, data, nome: funcionario?.nome ?? o.nome, funcionario_id: funcionario?.id });
     }
-    setBusy(true);
-    const payload = {
-      data: f.data, turma: f.turma, horario: f.horario, lider: f.lider, observacoes: f.observacoes,
-      producao: linhasValidas,
-      paradas: f.paradas.filter((x) => Object.values(x).some(Boolean)),
-      ocorrencias,
-      acidente: f.acidente,
-      updated_at: new Date().toISOString(),
+    return {
+      payload: {
+        data: f.data, turma: f.turma, horario: f.horario, lider: f.lider, observacoes: f.observacoes,
+        producao: linhasValidas,
+        paradas: f.paradas.filter((x) => Object.values(x).some(Boolean)),
+        ocorrencias,
+        acidente: f.acidente,
+        updated_at: new Date().toISOString(),
+      },
     };
-    const bid = id ?? crypto.randomUUID();
+  }
+
+  /** Grava sozinho de 30 em 30 segundos, sem o líder clicar em nada. */
+  async function autoSalvar() {
+    if (busy || !pronto.current || autoOcupado.current || autoFalhou.current) return;
+    if (!sujo.current || !f.turma || !temLancamento) return;
+    const r = montarConteudo();
+    if ("erro" in r) return;
+    autoOcupado.current = true;
+    const hora = new Date().toLocaleTimeString("pt-BR");
+    try {
+      if (typeof navigator !== "undefined" && !navigator.onLine) {
+        await enfileirar({ tipo: "salvar", id: bid, payload: r.payload });
+        marcarLimpo();
+        setAutoEm(hora);
+        return;
+      }
+      const { error } = await supabase.from("boletins").upsert({ id: bid, ...r.payload } as never);
+      if (error) {
+        if (erroDeRede(error)) {
+          await enfileirar({ tipo: "salvar", id: bid, payload: r.payload });
+          marcarLimpo();
+          setAutoEm(hora);
+        } else if (error.code === "23505") {
+          autoFalhou.current = true;
+          toast.error("Já existe boletim para este dia e horário. Abra-o pelo Histórico para editar.", { duration: 12000 });
+        } else {
+          toast.error("Não deu para salvar sozinho: " + error.message);
+        }
+        return;
+      }
+      marcarLimpo();
+      qc.invalidateQueries({ queryKey: ["boletins"] });
+      setAutoEm(hora);
+    } catch {
+      /* tenta de novo em 30 segundos */
+    } finally {
+      autoOcupado.current = false;
+    }
+  }
+  const autoRef = useRef(autoSalvar);
+  useEffect(() => { autoRef.current = autoSalvar; });
+  useEffect(() => {
+    const t = setInterval(() => { void autoRef.current(); }, 30_000);
+    return () => clearInterval(t);
+  }, []);
+
+  async function salvar() {
+    if (!f.turma) { toast.error("Selecione a Turma antes de salvar."); return; }
+    const r = montarConteudo();
+    if ("erro" in r) { toast.error(r.erro); return; }
+    setBusy(true);
+    const payload = r.payload;
     const salvarOffline = async () => {
       await enfileirar({ tipo: "salvar", id: bid, payload });
       const local = { id: bid, ...payload } as unknown as Boletim;
@@ -148,18 +222,16 @@ export function BoletimForm({ inicial, id }: { inicial: Form; id?: string }) {
       navigate({ to: "/painel" });
     };
     if (typeof navigator !== "undefined" && !navigator.onLine) return salvarOffline();
-    let r;
+    let res;
     try {
-      r = id
-        ? await supabase.from("boletins").update(payload as never).eq("id", id).select("id").single()
-        : await supabase.from("boletins").insert({ id: bid, ...payload } as never).select("id").single();
+      res = await supabase.from("boletins").upsert({ id: bid, ...payload } as never).select("id").single();
     } catch {
       return salvarOffline();
     }
-    if (r.error && erroDeRede(r.error)) return salvarOffline();
+    if (res.error && erroDeRede(res.error)) return salvarOffline();
     setBusy(false);
-    if (r.error) {
-      toast.error(r.error.code === "23505" ? "Já existe boletim para este dia e horário" : r.error.message);
+    if (res.error) {
+      toast.error(res.error.code === "23505" ? "Já existe boletim para este dia e horário" : res.error.message);
       return;
     }
     limparRascunho();
@@ -167,7 +239,7 @@ export function BoletimForm({ inicial, id }: { inicial: Form; id?: string }) {
     qc.invalidateQueries({ queryKey: ["boletins"] });
     qc.invalidateQueries({ queryKey: ["boletim"] });
     qc.invalidateQueries({ queryKey: ["lancamentos"] });
-    navigate({ to: "/boletim/$id", params: { id: r.data.id } });
+    navigate({ to: "/boletim/$id", params: { id: res.data.id } });
   }
 
   async function excluir() {
@@ -203,7 +275,10 @@ export function BoletimForm({ inicial, id }: { inicial: Form; id?: string }) {
         return <datalist key={s.id} id={"bm-" + s.id}>{lista.map((v) => <option key={v} value={v} />)}{opts("marca")}</datalist>;
       })}
 
-      <div className="no-print flex flex-wrap justify-end gap-2">
+      <div className="no-print flex flex-wrap items-center justify-end gap-2">
+        <span className="mr-auto text-xs text-muted-foreground" aria-live="polite">
+          {autoEm ? `Salvo automaticamente às ${autoEm}` : "Salva sozinho a cada 30 segundos"}
+        </span>
         {id && <Button variant="ghost" onClick={excluir}>Excluir</Button>}
         {id && <Button variant="outline" onClick={() => window.print()}>Imprimir</Button>}
         <Button onClick={salvar} disabled={busy}>{busy ? "Salvando..." : "Salvar boletim"}</Button>
@@ -217,6 +292,7 @@ export function BoletimForm({ inicial, id }: { inicial: Form; id?: string }) {
         <div className="grid grid-cols-2 border-b text-sm sm:grid-cols-6">
           <Cab label="Turma">
             <select className="sheet-cell font-bold" value={f.turma} onChange={(e) => setF({ ...f, turma: e.target.value })}>
+              <option value="">Selecione</option>
               {TURMAS.map((t) => <option key={t}>{t}</option>)}
             </select>
           </Cab>

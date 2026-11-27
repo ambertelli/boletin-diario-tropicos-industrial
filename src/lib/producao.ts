@@ -27,6 +27,18 @@ export type Acidente = Partial<Record<"nome" | "funcao" | "local" | "parte" | "a
 
 export type ItemProgramacao = { id: string; marca: string; formato: string; metros: string; quantidade: number; prioridadeFabricacao?: number | null };
 
+/** Conteúdo inicial de um boletim novo: a turma fica em branco para o líder escolher. */
+export function novoBoletimInicial(data: string, horario: string) {
+  return {
+    data, turma: "", horario, lider: "",
+    producao: [] as LinhaProducao[],
+    paradas: [] as Parada[],
+    ocorrencias: [] as Ocorrencia[],
+    acidente: {} as Acidente,
+    observacoes: "",
+  };
+}
+
 const norm = (s: string) => (s ?? "").trim().toLowerCase().replace(/\s+/g, " ");
 export const chave = (marca: string, formato: string, metros: string) =>
   `${norm(marca)}|${norm(formato)}|${norm(metros)}`;
